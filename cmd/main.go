@@ -10,9 +10,11 @@ import (
 func main() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello, you've requested: %s\n", r.URL.Path)
-	}).Methods("GET")
+	}
+
+	r.HandleFunc("/", handler).Methods("GET")
 
 	err := http.ListenAndServe(":80", r)
 	if err != nil {

@@ -20,7 +20,7 @@ RUN ./bin/golangci-lint run ./...
 RUN go test ./...
 
 # Build executable
-RUN CGO_ENABLED=0 GOOS=linux go build -v -o service-executable ./internal
+RUN CGO_ENABLED=0 GOOS=linux go build -v -o service-executable ./cmd
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds

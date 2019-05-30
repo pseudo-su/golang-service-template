@@ -1,4 +1,5 @@
 /bin
+/.gobincache
 /golang-service-template
 /.idea
 .DS_store
