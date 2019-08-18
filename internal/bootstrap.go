@@ -21,7 +21,7 @@ type ApplicationConfig interface {
 	ServerPort() int
 }
 
-func Bootstrap(cfg ApplicationConfig) {
+func Bootstrap(cfg ApplicationConfig) *config.Server {
 	basepath := cfg.ServiceBasepath()
 	server := config.NewServer().
 		WithMiddleware(
@@ -36,6 +36,5 @@ func Bootstrap(cfg ApplicationConfig) {
 			pets.CreatePetRoute(cfg),
 			pets.GetPetRoute(cfg),
 		)
-
-	server.Start("", cfg.ServerPort())
+	return server
 }

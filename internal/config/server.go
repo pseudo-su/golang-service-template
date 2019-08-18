@@ -44,7 +44,7 @@ func (server *Server) MountRoutes(path string, routes ...*Route) *Server {
 }
 
 //Start starts the server on the defined port
-func (server *Server) Start(addr string, port int) {
+func (server *Server) Start(port int) {
 	_ = server.router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		methods, err := route.GetMethods()
 		if err != nil {
@@ -65,7 +65,7 @@ func (server *Server) Start(addr string, port int) {
 
 	panic(
 		http.ListenAndServe(
-			fmt.Sprintf("%s:%v", addr, port),
+			fmt.Sprintf(":%v", port),
 			handlers.RecoveryHandler()(server.router),
 		),
 	)
