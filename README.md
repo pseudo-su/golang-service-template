@@ -8,6 +8,7 @@
 * Documentation driven development; Models & API Client generated from openapi v3 spec.
 * Embedded documentation (swagger ui) served under whitelisted environment
 * Lightweight wrapper for `http.Server` to make bootstrapping the server easy to read and respect proper os process signals for server start/shutdown.
+* Unit tests, Integration, and Smoke suite skeletons
 * Docker deployment
 
 ### Features
