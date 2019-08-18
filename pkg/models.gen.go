@@ -9,17 +9,25 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-// Pet defines model for Pet.
-type Pet struct {
-	Id   int64   `json:"id"`
+// NewPet defines model for NewPet.
+type NewPet struct {
 	Name string  `json:"name"`
 	Tag  *string `json:"tag,omitempty"`
 }
 
-// Pets defines model for Pets.
-type Pets []Pet
-
-// ListPetsParams defines parameters for ListPets.
-type ListPetsParams struct {
-	Limit *int32 `json:"limit,omitempty"`
+// Pet defines model for Pet.
+type Pet struct {
+	// Embedded struct due to allOf(#/components/schemas/NewPet)
+	NewPet
+	// Embedded fields due to inline allOf schema
+	Id int64 `json:"id"`
 }
+
+// FindPetsParams defines parameters for FindPets.
+type FindPetsParams struct {
+	Tags  *[]string `json:"tags,omitempty"`
+	Limit *int32    `json:"limit,omitempty"`
+}
+
+// AddPetRequestBody defines body for AddPet for application/json ContentType.
+type AddPetJSONRequestBody NewPet
