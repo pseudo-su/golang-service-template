@@ -1,51 +1,60 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
 
 type Server struct {
-	router   *mux.Router
-	basePath string
+	http.Server
+	router      *mux.Router
+	basePath    string
+	ShutdownReq chan bool
+	done        chan bool
 }
 
 func NewServer() *Server {
 	return &Server{
-		router:   mux.NewRouter(),
-		basePath: "/",
+		Server:      http.Server{},
+		router:      mux.NewRouter(),
+		basePath:    "/",
+		ShutdownReq: make(chan bool),
+		done:        make(chan bool),
 	}
 }
 
-func (server *Server) WithBasePath(basePath string) *Server {
-	server.basePath = basePath
-	return server
+func (s *Server) WithBasePath(basePath string) *Server {
+	s.basePath = basePath
+	return s
 }
 
-func (server *Server) WithMiddleware(mwf ...mux.MiddlewareFunc) *Server {
-	server.router.Use(mwf...)
-	return server
+func (s *Server) WithMiddleware(mwf ...mux.MiddlewareFunc) *Server {
+	s.router.Use(mwf...)
+	return s
 }
 
-func (server *Server) WithRoutes(routes ...*Route) *Server {
-	return server.MountRoutes(server.basePath, routes...)
+func (s *Server) WithRoutes(routes ...*Route) *Server {
+	return s.MountRoutes(s.basePath, routes...)
 }
 
-func (server *Server) MountRoutes(path string, routes ...*Route) *Server {
-	sub := server.router.PathPrefix(path).Subrouter()
+func (s *Server) MountRoutes(path string, routes ...*Route) *Server {
+	sub := s.router.PathPrefix(path).Subrouter()
 	for _, route := range routes {
 		sub.Handle(route.Path, route.Handler).Methods(route.Method)
 	}
-	return server
+	return s
 }
 
-//Start starts the server on the defined port
-func (server *Server) Start(port int) {
-	_ = server.router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+func DescribeRoutes(router *mux.Router) {
+	_ = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		methods, err := route.GetMethods()
 		if err != nil {
 			return nil
@@ -62,13 +71,53 @@ func (server *Server) Start(port int) {
 		}
 		return nil
 	})
+}
+func (s *Server) WaitShutdown() {
+	irqSig := make(chan os.Signal, 1)
+	signal.Notify(irqSig, syscall.SIGINT, syscall.SIGTERM)
 
-	panic(
-		http.ListenAndServe(
-			fmt.Sprintf(":%v", port),
-			handlers.RecoveryHandler()(server.router),
-		),
-	)
+	//Wait interrupt or shutdown request through /shutdown
+	select {
+	case sig := <-irqSig:
+		log.Printf("Shutdown request (signal: %v)", sig)
+	case sig := <-s.ShutdownReq:
+		log.Printf("Shutdown request (/shutdown %v)", sig)
+	}
+
+	log.Printf("Stoping http server ...")
+
+	//Create shutdown context with 10 second timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	//shutdown the server
+	err := s.Shutdown(ctx)
+	if err != nil {
+		log.Printf("Shutdown request error: %v", err)
+	}
+}
+
+//Start starts the server on the defined port
+func (s *Server) Start(port int) {
+	// Set server values
+	s.Handler = s.router
+	s.Addr = fmt.Sprintf(":%v", port)
+
+	DescribeRoutes(s.router)
+
+	finish := make(chan error)
+	go func() {
+		err := s.ListenAndServe()
+		if err != nil {
+			log.Printf("Listen and serve: %v", err)
+		}
+		finish <- err
+	}()
+
+	//wait shutdown
+	s.WaitShutdown()
+
+	<-finish
 }
 
 type Route struct {

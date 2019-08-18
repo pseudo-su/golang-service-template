@@ -23,6 +23,9 @@ type Pet struct {
 	Id int64 `json:"id"`
 }
 
+// Pets defines model for Pets.
+type Pets []Pet
+
 // FindPetsParams defines parameters for FindPets.
 type FindPetsParams struct {
 	Tags  *[]string `json:"tags,omitempty"`

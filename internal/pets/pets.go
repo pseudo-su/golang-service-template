@@ -18,20 +18,18 @@ var pets pkg.Pets
 
 func init() {
 	pets = pkg.Pets{
-		pkg.Pet{
-			Id:   1,
-			Name: "Rex",
-			Tag:  nil,
-		},
-		pkg.Pet{
-			Id:   2,
-			Name: "Spot",
-			Tag:  nil,
-		},
-		pkg.Pet{
-			Id:   3,
-			Name: "Barry",
-			Tag:  nil,
+		NewPet(1, "Rex", nil),
+		NewPet(2, "Spot", nil),
+		NewPet(3, "Barry", nil),
+	}
+}
+
+func NewPet(id int64, name string, tag *string) pkg.Pet {
+	return pkg.Pet{
+		Id: id,
+		NewPet: pkg.NewPet{
+			Name: name,
+			Tag:  tag,
 		},
 	}
 }
@@ -56,11 +54,7 @@ func CreatePetRoute(cfg PetsRouteCfg) *config.Route {
 		Method: http.MethodPost,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			pet := pkg.Pet{
-				Id:   int64(len(pets) + 1),
-				Name: "Rex",
-				Tag:  nil,
-			}
+			pet := NewPet(int64(len(pets)+1), "Rex", nil)
 			pets = append(pets, pet)
 			resp, err := json.Marshal(&pet)
 			if err != nil {

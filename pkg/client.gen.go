@@ -263,7 +263,7 @@ func NewClientWithResponsesAndRequestEditorFunc(server string, reqEditorFn Reque
 type findPetsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *[]Pet
+	JSON200      *Pets
 	JSONDefault  *Error
 }
 
@@ -410,7 +410,7 @@ func ParsefindPetsResponse(rsp *http.Response) (*findPetsResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		response.JSON200 = &[]Pet{}
+		response.JSON200 = &Pets{}
 		if err := json.Unmarshal(bodyBytes, response.JSON200); err != nil {
 			return nil, err
 		}
