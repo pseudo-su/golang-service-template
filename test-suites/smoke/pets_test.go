@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStatements(t *testing.T) {
+func TestPets(t *testing.T) {
 	_, apiClient := smokeSuiteSetup()
 
 	t.Run("List Pets", func(t *testing.T) {

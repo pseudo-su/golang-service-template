@@ -1,3 +1,5 @@
+github.com/apg/patter v0.0.0-20160930163000-bd185be70ac8 h1:9sCOZQ0/s4Jvxu0G9fV0N6gI93GDP0DfYcewyINODUU=
+github.com/apg/patter v0.0.0-20160930163000-bd185be70ac8/go.mod h1:gVqzZMOoWtuwUkyPqM9nyCUWrU2o33A49xnHCbB/Q44=
 github.com/bradleyjkemp/cupaloy v2.3.0+incompatible/go.mod h1:Au1Xw1sgaJ5iSFktEhYsS0dbQiS1B0/XMXl+42y9Ilk=
 github.com/caarlos0/env v3.5.0+incompatible h1:Yy0UN8o9Wtr/jGHZDpCBLpNrzcFLLM2yixi/rBrKyJs=
 github.com/caarlos0/env v3.5.0+incompatible/go.mod h1:tdCsowwCzMLdkqRYDlHpZCp2UooDD3MspDBjZ2AD02Y=

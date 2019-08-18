@@ -10,13 +10,16 @@
 ### Features
 
 * Spec-driven development using `oapi-codegen`
+  * `pkg/models.gen.go` Generated Models
+  * `internal/spec.gen.go` Embedded swagger spec and swagger ui (exposed at `/swagger.html` and `openapi.json`)
+  * `pkg/client.gen.go` Generated API client
 * Test suites
   * `test-suites/integration` Integration tests
   * `test-suites/smoke` Smoke tests
 * Test reports
-  * `reports/test-unit.lcov`
+  * `reports/test-unit.out`
   * `reports/test-unit.tap`
-  * `reports/test-integration.lcov`
+  * `reports/test-integration.out`
   * `reports/test-integration.tap`
   * `reports/test-smoke.tap`
 * When you checkout out the repo for the first time the [`.vscode/settings.json`](https://github.com/pseudo-su/golang-service-template/blob/master/.vscode/settings.json) comes with it (while any further changes you make to it are gitignored).

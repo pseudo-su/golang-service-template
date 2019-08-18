@@ -227,7 +227,7 @@ func (r createPetsResponse) StatusCode() int {
 type showPetByIdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Pets
+	JSON200      *Pet
 	JSONDefault  *Error
 }
 
@@ -344,7 +344,7 @@ func ParseshowPetByIdResponse(rsp *http.Response) (*showPetByIdResponse, error) 
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		response.JSON200 = &Pets{}
+		response.JSON200 = &Pet{}
 		if err := json.Unmarshal(bodyBytes, response.JSON200); err != nil {
 			return nil, err
 		}

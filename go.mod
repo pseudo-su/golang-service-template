@@ -3,6 +3,7 @@ module github.com/pseudo-su/golang-service-template
 go 1.12
 
 require (
+	github.com/apg/patter v0.0.0-20160930163000-bd185be70ac8
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/getkin/kin-openapi v0.2.0
 	github.com/gorilla/handlers v1.4.2

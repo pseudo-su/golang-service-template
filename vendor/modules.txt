@@ -1,3 +1,5 @@
+# github.com/apg/patter v0.0.0-20160930163000-bd185be70ac8
+github.com/apg/patter
 # github.com/caarlos0/env v3.5.0+incompatible
 github.com/caarlos0/env
 # github.com/davecgh/go-spew v1.1.1
