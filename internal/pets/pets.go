@@ -11,17 +11,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//nolint:go-lint
+//nolint
 type PetsRouteCfg interface{}
 
-var pets pkg.Pets
-
-func init() {
-	pets = pkg.Pets{
-		NewPet(1, "Rex", nil),
-		NewPet(2, "Spot", nil),
-		NewPet(3, "Barry", nil),
-	}
+var pets = pkg.Pets{
+	NewPet(1, "Rex", nil),
+	NewPet(2, "Spot", nil),
+	NewPet(3, "Barry", nil),
 }
 
 func NewPet(id int64, name string, tag *string) pkg.Pet {
@@ -43,7 +39,7 @@ func ListPetsRoute(cfg PetsRouteCfg) *config.Route {
 			resp, _ := json.Marshal(&pets)
 
 			w.WriteHeader(http.StatusOK)
-			w.Write(resp)
+			_, _ = w.Write(resp)
 		}),
 	}
 }
@@ -64,7 +60,7 @@ func CreatePetRoute(cfg PetsRouteCfg) *config.Route {
 			}
 
 			w.WriteHeader(http.StatusOK)
-			w.Write(resp)
+			_, _ = w.Write(resp)
 		}),
 	}
 }
@@ -75,7 +71,7 @@ func GetPetRoute(cfg PetsRouteCfg) *config.Route {
 		Method: http.MethodGet,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			vars := mux.Vars(r)
-			petId, err := strconv.ParseInt(vars["petId"], 10, 64)
+			petID, err := strconv.ParseInt(vars["petId"], 10, 64)
 			if err != nil {
 				// TODO: add validation
 				log.Warn("validation error")
@@ -84,7 +80,7 @@ func GetPetRoute(cfg PetsRouteCfg) *config.Route {
 			w.Header().Set("Content-Type", "application/json")
 			var pet pkg.Pet
 			for _, p := range pets {
-				if p.Id == petId {
+				if p.Id == petID {
 					pet = p
 				}
 			}
@@ -96,7 +92,7 @@ func GetPetRoute(cfg PetsRouteCfg) *config.Route {
 			}
 
 			w.WriteHeader(http.StatusOK)
-			w.Write(resp)
+			_, _ = w.Write(resp)
 		}),
 	}
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-//nolint:go-lint
+//nolint
 type TestSuite struct {
 	suite.Suite
 	server    *config.Server

@@ -7,7 +7,7 @@ import (
 
 func main() {
 	cfg := config.NewApplicationConfig()
-	server := internal.Bootstrap(cfg)
+	server := internal.InitServer(cfg)
 
 	server.Start(cfg.ServerPort())
 }

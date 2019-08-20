@@ -15,13 +15,11 @@ func requestSetupMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-type ApplicationConfig interface {
-	Env() string
-	ServiceBasepath() string
-	ServerPort() int
+type ApplicationContext interface {
+	SwaggerRouteCfg
 }
 
-func Bootstrap(cfg ApplicationConfig) *config.Server {
+func InitServer(cfg ApplicationContext) *config.Server {
 	basepath := cfg.ServiceBasepath()
 	server := config.NewServer().
 		WithMiddleware(
