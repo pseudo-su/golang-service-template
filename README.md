@@ -56,3 +56,13 @@ env GO111MODULE=off go get -u github.com/myitcv/gobin
 docker build -t golang-service-template .
 docker run -p 8080:80 golang-service-template
 ```
+
+## TODO
+
+* opentracing
+* Examples of API Errors
+* Make it easy to follow basic [JSON API responses](https://jsonapi.org/) by default. EG top level `data: {}`, `errors: []` and `meta: {}` etc.
+* Examples of internal error wrapping
+* API request/response validation from openapi spec (skip validating responses in prod).
+* Potentially better logging without logrus?
+* Error/APM reporting/metrics (maybe [go-metrics](https://github.com/rcrowley/go-metrics))

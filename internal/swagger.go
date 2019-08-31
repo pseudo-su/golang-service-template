@@ -97,7 +97,7 @@ func createServeBytesHandler(env, specPath, redirectURLPath, contentType string,
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		swaggerUI, err := fn(specPath, redirectURLPath)
+		bytes, err := fn(specPath, redirectURLPath)
 		if err != nil {
 			log.Warn(err)
 			w.WriteHeader(http.StatusNotFound)
@@ -105,7 +105,7 @@ func createServeBytesHandler(env, specPath, redirectURLPath, contentType string,
 		}
 
 		w.Header().Set("Content-Type", contentType)
-		_, err = w.Write(swaggerUI)
+		_, err = w.Write(bytes)
 
 		if err != nil {
 			log.Warn(err)

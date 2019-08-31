@@ -24,7 +24,8 @@ func (suite *TestSuite) SetupSuite() {
 	serverBaseURL := buildBaseURL(suite.cfg)
 	suite.apiClient = pkg.NewClientWithResponses(serverBaseURL)
 
-	// suite.server = internal.Bootstrap(suite.cfg)
+	// TODO: make the integration test suite init it's own server instance
+	// suite.server = internal.SetupServer(suite.cfg)
 	// if suite.cfg.envValues.UseEmbeddedServer {
 	// 	go func() {
 	// 		err := suite.server.ListenAndServe()
