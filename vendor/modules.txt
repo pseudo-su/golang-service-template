@@ -5,12 +5,10 @@ github.com/caarlos0/env
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/getkin/kin-openapi v0.2.0
-github.com/getkin/kin-openapi/openapi3
 github.com/getkin/kin-openapi/jsoninfo
+github.com/getkin/kin-openapi/openapi3
 # github.com/ghodss/yaml v1.0.0
 github.com/ghodss/yaml
-# github.com/gorilla/handlers v1.4.2
-github.com/gorilla/handlers
 # github.com/gorilla/mux v1.7.2
 github.com/gorilla/mux
 # github.com/konsorten/go-windows-terminal-sequences v1.0.1
@@ -29,16 +27,18 @@ github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
 # github.com/pseudo-su/oapi-codegen v1.2.6-0.20190818015946-468766f7c4fc
-github.com/pseudo-su/oapi-codegen/pkg/runtime
 github.com/pseudo-su/oapi-codegen/cmd/oapi-codegen
 github.com/pseudo-su/oapi-codegen/pkg/codegen
-github.com/pseudo-su/oapi-codegen/pkg/util
 github.com/pseudo-su/oapi-codegen/pkg/codegen/html
 github.com/pseudo-su/oapi-codegen/pkg/codegen/templates
+github.com/pseudo-su/oapi-codegen/pkg/runtime
+github.com/pseudo-su/oapi-codegen/pkg/util
 # github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
 # github.com/stretchr/testify v1.4.0
 github.com/stretchr/testify/assert
+github.com/stretchr/testify/require
+github.com/stretchr/testify/suite
 # github.com/valyala/bytebufferpool v1.0.0
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.0.1
@@ -52,8 +52,8 @@ golang.org/x/net/idna
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.2
 golang.org/x/text/secure/bidirule
+golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-golang.org/x/text/transform
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2
