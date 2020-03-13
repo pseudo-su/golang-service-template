@@ -22,11 +22,17 @@ jobs:
         env GO111MODULE=off go get -u github.com/myitcv/gobin
         go mod download
 
-    - name: Lint and Test
+    - name: Lint
       run: |
         ./bin/golangci-lint run ./...
-        go test -coverprofile=reports/test-unit.out -v -p 5 ./cmd/... ./internal/... ./pkg/... | gobin -m -run github.com/apg/patter > reports/test-unit.tap
-        # TODO: run integration tests?
+
+    - name: Unit Test
+      run: |
+        make report-test-unit
+
+    - name: Integration Test
+      run: |
+        docker-compose run --rm tools make report-test-integration
 
     - name: Build
       run: go build -v -o golang-service-template ./cmd
