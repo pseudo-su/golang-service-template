@@ -7,10 +7,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - name: Set up Go 1.12
+    - name: Set up Go 1.14
       uses: actions/setup-go@v1
       with:
-        go-version: 1.12
+        go-version: 1.14
       id: go
 
     - name: Check out code into the Go module directory
@@ -21,13 +21,12 @@ jobs:
         curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.16.0
         env GO111MODULE=off go get -u github.com/myitcv/gobin
         go mod download
-      
+
     - name: Lint and Test
       run: |
         ./bin/golangci-lint run ./...
         go test -coverprofile=reports/test-unit.out -v -p 5 ./cmd/... ./internal/... ./pkg/... | gobin -m -run github.com/apg/patter > reports/test-unit.tap
         # TODO: run integration tests?
-        
 
     - name: Build
       run: go build -v -o golang-service-template ./cmd

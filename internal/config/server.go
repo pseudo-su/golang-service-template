@@ -79,12 +79,12 @@ func (s *Server) WaitShutdown() {
 	//Wait interrupt or shutdown request through /shutdown
 	select {
 	case sig := <-irqSig:
-		log.Printf("Shutdown request (signal: %v)", sig)
+		log.Infof("Shutdown request (signal: %v)", sig)
 	case sig := <-s.ShutdownReq:
-		log.Printf("Shutdown request (/shutdown %v)", sig)
+		log.Infof("Shutdown request (/shutdown %v)", sig)
 	}
 
-	log.Printf("Stoping http server ...")
+	log.Infof("Stoping http server ...")
 
 	//Create shutdown context with 10 second timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -93,7 +93,7 @@ func (s *Server) WaitShutdown() {
 	//shutdown the server
 	err := s.Shutdown(ctx)
 	if err != nil {
-		log.Printf("Shutdown request error: %v", err)
+		log.Infof("Shutdown request error: %v", err)
 	}
 }
 
@@ -103,13 +103,14 @@ func (s *Server) Start(port int) {
 	s.Handler = s.router
 	s.Addr = fmt.Sprintf(":%v", port)
 
+	log.Infof("Starting server %v", s.Addr)
 	DescribeRoutes(s.router)
 
 	finish := make(chan error)
 	go func() {
 		err := s.ListenAndServe()
 		if err != nil {
-			log.Printf("Listen and serve: %v", err)
+			log.WithError(err).Error("server closed")
 		}
 		finish <- err
 	}()

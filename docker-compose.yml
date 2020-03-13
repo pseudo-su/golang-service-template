@@ -1,0 +1,12 @@
+version: '3.7'
+services:
+  golang-service-template:
+    build:
+      context: .
+      dockerfile: $PWD/devstack/Dockerfile.dev
+    env_file: $PWD/devstack/.env
+    ports:
+      - '3000:3000'
+      - '2345:2345'
+    volumes:
+      - .:/app

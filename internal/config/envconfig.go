@@ -6,11 +6,10 @@ import (
 )
 
 type envConfig struct {
-	ServiceName    string `env:"SERVICE_NAME" envDefault:"golang-service-template"`
-	ServiceURIName string `env:"SERVICE_URI_NAME" envDefault:"golang-service-template"`
-	ServerPort     int    `env:"SERVER_PORT" envDefault:"3000"`
-	Env            string `env:"ENV" envDefault:"local"`
-	APIVersion     string `env:"API_VERSION" envDefault:"v1"`
+	ServiceName string `env:"SERVICE_NAME" envDefault:"golang-service-template"`
+	APIBasepath string `env:"API_BASEPATH" envDefault:"/golang-service-template/v1"`
+	ServerPort  int    `env:"SERVER_PORT" envDefault:"3000"`
+	Env         string `env:"ENV" envDefault:"local"`
 
 	// Logs
 	LogLevel  string `env:"LOG_LEVEL"`

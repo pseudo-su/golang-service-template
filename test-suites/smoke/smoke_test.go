@@ -34,7 +34,7 @@ func (suite *TestSuite) SetupSuite() {
 		go func() {
 			err := suite.server.ListenAndServe()
 			if err != nil {
-				log.Printf("Listen and serve: %v", err)
+				log.Infof("Listen and serve: %v", err)
 			}
 		}()
 	}
@@ -72,7 +72,7 @@ func (cfg *TestSuiteConfig) ServerPort() int {
 }
 
 func (cfg *TestSuiteConfig) ServiceBasepath() string {
-	return fmt.Sprintf("/%s/%s", cfg.envValues.ServiceURIName, cfg.envValues.APIVersion)
+	return cfg.envValues.APIBasepath
 }
 
 type testSuiteEnv struct {
@@ -80,8 +80,7 @@ type testSuiteEnv struct {
 	APIScheme         string `env:"API_SCHEME" envDefault:"http"`
 	APIHost           string `env:"API_HOST" envDefault:"localhost"`
 	APIPort           int    `env:"API_PORT" envDefault:"3000"`
-	ServiceURIName    string `env:"SERVICE_URI_NAME" envDefault:"golang-service-template"`
-	APIVersion        string `env:"API_VERSION" envDefault:"v1"`
+	APIBasepath       string `env:"API_BASEPATH" envDefault:"/golang-service-template/v1"`
 	Env               string `env:"ENV" envDefault:"local"`
 	LogLevel          string `env:"LOG_LEVEL" envDefault:"debug"`
 }
