@@ -8,7 +8,7 @@ require (
 	github.com/deepmap/oapi-codegen v1.3.6
 	github.com/getkin/kin-openapi v0.2.0
 	github.com/gorilla/mux v1.7.2
-	github.com/pseudo-su/oapi-ui-codegen v0.0.0-20200313104620-54048ee2eeae
+	github.com/pseudo-su/oapi-ui-codegen v0.0.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.4.0
 )
