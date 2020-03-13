@@ -3,6 +3,7 @@ package integration
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/caarlos0/env"
 	"github.com/pseudo-su/golang-service-template/internal"
@@ -23,22 +24,26 @@ type TestSuite struct {
 func (suite *TestSuite) SetupSuite() {
 	suite.cfg = ParseSuiteConfig()
 	serverBaseURL := buildBaseURL(suite.cfg)
-	suite.apiClient = pkg.NewClientWithResponses(serverBaseURL)
+	apiClient, err := pkg.NewClientWithResponses(serverBaseURL)
+	if err != nil {
+		panic(err)
+	}
+	suite.apiClient = apiClient
 	suite.server = internal.Bootstrap(suite.cfg)
 
-	// if suite.cfg.envValues.UseEmbeddedServer {
-	// 	go func() {
-	// 		err := suite.server.ListenAndServe()
-	// 		if err != nil {
-	// 			log.Printf("Listen and serve: %v", err)
-	// 		}
-	// 	}()
-	// 	time.Sleep(2 * time.Second)
-	// }
+	if suite.cfg.envValues.UseEmbeddedServer {
+		go func() {
+			err := suite.server.ListenAndServe()
+			if err != nil {
+				log.Printf("Listen and serve: %v", err)
+			}
+		}()
+		time.Sleep(2 * time.Second)
+	}
 }
 
 func (suite *TestSuite) TeardownSuite() {
-	// suite.server.ShutdownReq <- true
+	suite.server.ShutdownReq <- true
 }
 
 func TestRunSuite(t *testing.T) {

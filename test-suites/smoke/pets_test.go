@@ -14,7 +14,7 @@ func (suite *TestSuite) TestListPets() {
 	params := pkg.ListPetsParams{}
 	_, err := suite.apiClient.ListPetsWithResponse(ctx, &params)
 	fmt.Println(err)
-	assert.Equal(t, err, nil)
+	assert.Equal(t, nil, err)
 }
 
 func (suite *TestSuite) TestCreatePet() {
@@ -22,7 +22,7 @@ func (suite *TestSuite) TestCreatePet() {
 	ctx := context.Background()
 	_, err := suite.apiClient.CreatePetsWithResponse(ctx)
 	fmt.Println(err)
-	assert.Equal(t, err, nil)
+	assert.Equal(t, nil, err)
 }
 
 func (suite *TestSuite) TestShowPetById() {
@@ -30,5 +30,5 @@ func (suite *TestSuite) TestShowPetById() {
 	ctx := context.Background()
 	_, err := suite.apiClient.ShowPetByIdWithResponse(ctx, "2")
 	fmt.Println(err)
-	assert.Equal(t, err, nil)
+	assert.Equal(t, nil, err)
 }

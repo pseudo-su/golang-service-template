@@ -1,5 +1,4 @@
 export GO111MODULE=on
-export GOFLAGS=-mod=vendor
 
 help:
 	@echo "This is a helper makefile for oapi-codegen"
@@ -12,10 +11,6 @@ help:
 
 generate:
 	go generate ./...
-
-update-vendor:
-	go mod tidy
-	go mod vendor
 
 test: test-unit test-integration
 

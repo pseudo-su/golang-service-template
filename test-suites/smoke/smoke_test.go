@@ -23,7 +23,11 @@ type TestSuite struct {
 func (suite *TestSuite) SetupSuite() {
 	suite.cfg = ParseSuiteConfig()
 	serverBaseURL := buildBaseURL(suite.cfg)
-	suite.apiClient = pkg.NewClientWithResponses(serverBaseURL)
+	apiClient, err := pkg.NewClientWithResponses(serverBaseURL)
+	if err != nil {
+		panic(err)
+	}
+	suite.apiClient = apiClient
 	suite.server = internal.Bootstrap(suite.cfg)
 
 	if suite.cfg.envValues.UseEmbeddedServer {
@@ -72,13 +76,14 @@ func (cfg *TestSuiteConfig) ServiceBasepath() string {
 }
 
 type testSuiteEnv struct {
-	APIScheme      string `env:"API_SCHEME" envDefault:"http"`
-	APIHost        string `env:"API_HOST" envDefault:"localhost"`
-	APIPort        int    `env:"API_PORT" envDefault:"3000"`
-	ServiceURIName string `env:"SERVICE_URI_NAME" envDefault:"golang-service-template"`
-	APIVersion     string `env:"API_VERSION" envDefault:"v1"`
-	Env            string `env:"ENV" envDefault:"local"`
-	LogLevel       string `env:"LOG_LEVEL" envDefault:"debug"`
+	UseEmbeddedServer bool   `env:"USE_EMBEDDED_SERVER" envDefault:"true"`
+	APIScheme         string `env:"API_SCHEME" envDefault:"http"`
+	APIHost           string `env:"API_HOST" envDefault:"localhost"`
+	APIPort           int    `env:"API_PORT" envDefault:"3000"`
+	ServiceURIName    string `env:"SERVICE_URI_NAME" envDefault:"golang-service-template"`
+	APIVersion        string `env:"API_VERSION" envDefault:"v1"`
+	Env               string `env:"ENV" envDefault:"local"`
+	LogLevel          string `env:"LOG_LEVEL" envDefault:"debug"`
 }
 
 func ParseSuiteConfig() *TestSuiteConfig {

@@ -8,15 +8,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type SwaggerRouteCfg interface {
+type OpenAPIRouteCfg interface {
 	Env() string
 	ServiceBasepath() string
 }
 
 var (
 	SpecPath     = "openapi.json"
-	UIPath       = "swagger.html"
-	RedirectPath = "swagger-oauth2-redirect.html"
+	UIPath       = "swagger-ui.html"
+	RedirectPath = "swagger-ui-oauth2-redirect.html"
 )
 
 var EnvWhitelist = []string{
@@ -34,9 +34,9 @@ func swaggerWhitelisted(env string) bool {
 	return false
 }
 
-func GetSwaggerFn() GetBytesFn {
+func GetOpenAPISpecFn() GetBytesFn {
 	return func(specURL, redirectURL string) ([]byte, error) {
-		openapi, err := GetSwagger()
+		openapi, err := GetOpenAPISpec()
 		if err != nil {
 			return nil, err
 		}
@@ -48,7 +48,7 @@ func GetSwaggerFn() GetBytesFn {
 	}
 }
 
-func OpenAPISpecRoute(cfg SwaggerRouteCfg) (route *config.Route) {
+func OpenAPISpecRoute(cfg OpenAPIRouteCfg) (route *config.Route) {
 	routePath := fmt.Sprintf("/%s", SpecPath)
 
 	specPath := fmt.Sprintf("%s/%s", cfg.ServiceBasepath(), SpecPath)
@@ -57,12 +57,12 @@ func OpenAPISpecRoute(cfg SwaggerRouteCfg) (route *config.Route) {
 	route = &config.Route{
 		Path:    routePath,
 		Method:  http.MethodGet,
-		Handler: createServeBytesHandler(cfg.Env(), specPath, redirectURLPath, "application/json", GetSwaggerFn()),
+		Handler: createServeBytesHandler(cfg.Env(), specPath, redirectURLPath, "application/json", GetOpenAPISpecFn()),
 	}
 	return route
 }
 
-func SwaggerUIRoute(cfg SwaggerRouteCfg) (route *config.Route) {
+func SwaggerUIRoute(cfg OpenAPIRouteCfg) (route *config.Route) {
 	routePath := fmt.Sprintf("/%s", UIPath)
 
 	specPath := fmt.Sprintf("%s/%s", cfg.ServiceBasepath(), SpecPath)
@@ -76,7 +76,7 @@ func SwaggerUIRoute(cfg SwaggerRouteCfg) (route *config.Route) {
 	return route
 }
 
-func SwaggerUIRedirectRoute(cfg SwaggerRouteCfg) (route *config.Route) {
+func SwaggerUIRedirectRoute(cfg OpenAPIRouteCfg) (route *config.Route) {
 	routePath := fmt.Sprintf("/%s", RedirectPath)
 	specPath := fmt.Sprintf("%s/%s", cfg.ServiceBasepath(), SpecPath)
 	redirectURLPath := fmt.Sprintf("%s/%s", cfg.ServiceBasepath(), RedirectPath)
@@ -84,7 +84,7 @@ func SwaggerUIRedirectRoute(cfg SwaggerRouteCfg) (route *config.Route) {
 	route = &config.Route{
 		Path:    routePath,
 		Method:  http.MethodGet,
-		Handler: createServeBytesHandler(cfg.Env(), specPath, redirectURLPath, "text/html", GetSwaggerUIRedirect),
+		Handler: createServeBytesHandler(cfg.Env(), specPath, redirectURLPath, "text/html", GetOauth2RedirectPage),
 	}
 	return route
 }
