@@ -1,12 +1,28 @@
 version: '3.7'
 services:
-  golang-service-template:
+  service-dev:
+    container_name: golang-service-template-dev
     build:
       context: .
       dockerfile: $PWD/devstack/Dockerfile.dev
     env_file: $PWD/devstack/.env
+    environment:
+      GO_WORK_DIR: /app
     ports:
       - '3000:3000'
+    volumes:
+      - .:/app
+
+  service-debug:
+    container_name: golang-service-template-debug
+    build:
+      context: .
+      dockerfile: $PWD/devstack/Dockerfile.debug
+    env_file: $PWD/devstack/.env
+    environment:
+      GO_WORK_DIR: /app
+    ports:
+      - '3001:3000'
       - '2345:2345'
     volumes:
       - .:/app

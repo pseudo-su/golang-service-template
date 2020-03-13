@@ -12,6 +12,6 @@ RUN apk add --no-cache ca-certificates \
         musl-dev \
         bash
 
-RUN env GO111MODULE=off go get github.com/githubnemo/CompileDaemon
+RUN env GO111MODULE=off go get github.com/derekparker/delve/cmd/dlv
 
-ENTRYPOINT CompileDaemon --build="go build -o /tmp/service ./devstack/main.go" --command=/tmp/service
+CMD ["dlv", "debug", "/app/devstack", "--headless", "--listen=:2345", "--api-version=2", "--continue", "--accept-multiclient"]
