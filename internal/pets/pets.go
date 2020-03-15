@@ -12,7 +12,7 @@ import (
 )
 
 //nolint:go-lint
-type PetsRouteCfg interface{}
+type PetsRouteContext interface{}
 
 var pets pkg.Pets
 
@@ -36,7 +36,7 @@ func init() {
 	}
 }
 
-func ListPetsRoute(cfg PetsRouteCfg) *config.Route {
+func ListPetsRoute(routeCtx PetsRouteContext) *config.Route {
 	return &config.Route{
 		Path:   "/pets",
 		Method: http.MethodGet,
@@ -50,7 +50,7 @@ func ListPetsRoute(cfg PetsRouteCfg) *config.Route {
 	}
 }
 
-func CreatePetRoute(cfg PetsRouteCfg) *config.Route {
+func CreatePetRoute(routeCtx PetsRouteContext) *config.Route {
 	return &config.Route{
 		Path:   "/pets",
 		Method: http.MethodPost,
@@ -75,7 +75,7 @@ func CreatePetRoute(cfg PetsRouteCfg) *config.Route {
 	}
 }
 
-func GetPetRoute(cfg PetsRouteCfg) *config.Route {
+func GetPetRoute(routeCtx PetsRouteContext) *config.Route {
 	return &config.Route{
 		Path:   "/pets/{petId}",
 		Method: http.MethodGet,

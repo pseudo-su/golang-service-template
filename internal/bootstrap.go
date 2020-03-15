@@ -15,26 +15,26 @@ func requestSetupMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-type ApplicationConfig interface {
+type ApplicationContext interface {
 	Env() string
 	ServiceBasepath() string
 	ServerPort() int
 }
 
-func Bootstrap(cfg ApplicationConfig) *config.Server {
-	basepath := cfg.ServiceBasepath()
+func Bootstrap(appCtx ApplicationContext) *config.Server {
+	basepath := appCtx.ServiceBasepath()
 	server := config.NewServer().
 		WithMiddleware(
 			requestSetupMiddleware,
 		).
 		MountRoutes(
 			basepath,
-			OpenAPISpecRoute(cfg),
-			SwaggerUIRoute(cfg),
-			SwaggerUIRedirectRoute(cfg),
-			pets.ListPetsRoute(cfg),
-			pets.CreatePetRoute(cfg),
-			pets.GetPetRoute(cfg),
+			OpenAPISpecRoute(appCtx),
+			SwaggerUIRoute(appCtx),
+			SwaggerUIRedirectRoute(appCtx),
+			pets.ListPetsRoute(appCtx),
+			pets.CreatePetRoute(appCtx),
+			pets.GetPetRoute(appCtx),
 		)
 	return server
 }
