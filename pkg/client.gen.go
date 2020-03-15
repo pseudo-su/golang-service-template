@@ -81,6 +81,9 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// ListNotPets request
+	ListNotPets(ctx context.Context) (*http.Response, error)
+
 	// ListPets request
 	ListPets(ctx context.Context, params *ListPetsParams) (*http.Response, error)
 
@@ -89,6 +92,21 @@ type ClientInterface interface {
 
 	// ShowPetById request
 	ShowPetById(ctx context.Context, petId string) (*http.Response, error)
+}
+
+func (c *Client) ListNotPets(ctx context.Context) (*http.Response, error) {
+	req, err := NewListNotPetsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(req, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) ListPets(ctx context.Context, params *ListPetsParams) (*http.Response, error) {
@@ -134,6 +152,33 @@ func (c *Client) ShowPetById(ctx context.Context, petId string) (*http.Response,
 		}
 	}
 	return c.Client.Do(req)
+}
+
+// NewListNotPetsRequest generates requests for ListNotPets
+func NewListNotPetsRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/notpets")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 // NewListPetsRequest generates requests for ListPets
@@ -274,6 +319,29 @@ func WithBaseURL(baseURL string) ClientOption {
 	}
 }
 
+type listNotPetsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *NotPets
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r listNotPetsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r listNotPetsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type listPetsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -342,6 +410,15 @@ func (r showPetByIdResponse) StatusCode() int {
 	return 0
 }
 
+// ListNotPetsWithResponse request returning *ListNotPetsResponse
+func (c *ClientWithResponses) ListNotPetsWithResponse(ctx context.Context) (*listNotPetsResponse, error) {
+	rsp, err := c.ListNotPets(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListNotPetsResponse(rsp)
+}
+
 // ListPetsWithResponse request returning *ListPetsResponse
 func (c *ClientWithResponses) ListPetsWithResponse(ctx context.Context, params *ListPetsParams) (*listPetsResponse, error) {
 	rsp, err := c.ListPets(ctx, params)
@@ -367,6 +444,39 @@ func (c *ClientWithResponses) ShowPetByIdWithResponse(ctx context.Context, petId
 		return nil, err
 	}
 	return ParseShowPetByIdResponse(rsp)
+}
+
+// ParseListNotPetsResponse parses an HTTP response from a ListNotPetsWithResponse call
+func ParseListNotPetsResponse(rsp *http.Response) (*listNotPetsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &listNotPetsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest NotPets
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json"):
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseListPetsResponse parses an HTTP response from a ListPetsWithResponse call

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/pseudo-su/golang-service-template/internal/config"
+	"github.com/pseudo-su/golang-service-template/internal/notpets"
 	"github.com/pseudo-su/golang-service-template/internal/pets"
 	log "github.com/sirupsen/logrus"
 )
@@ -32,6 +33,7 @@ func Bootstrap(cfg ApplicationConfig) *config.Server {
 			OpenAPISpecRoute(cfg),
 			SwaggerUIRoute(cfg),
 			SwaggerUIRedirectRoute(cfg),
+			notpets.ListNotPetsRoute(cfg),
 			pets.ListPetsRoute(cfg),
 			pets.CreatePetRoute(cfg),
 			pets.GetPetRoute(cfg),

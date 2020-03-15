@@ -15,6 +15,30 @@ servers:
         default: api.example.com
   - url: http://petstore.swagger.io/v1
 paths:
+  /notpets:
+    get:
+      operationId: listNotPets
+      summary: List all notpets
+      tags:
+        - notpets
+      responses:
+        '200':
+          description: A paged array of pets
+          headers:
+            x-next:
+              description: A link to the next page of responses
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotPets"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /pets:
     get:
       summary: List all pets
@@ -89,6 +113,26 @@ paths:
                 $ref: "#/components/schemas/Error"
 components:
   schemas:
+    # Not Pets
+    NotPet:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        tag:
+          type: string
+    NotPets:
+      type: array
+      items:
+        $ref: "#/components/schemas/NotPet"
+
+    # Pets
     Pet:
       type: object
       required:

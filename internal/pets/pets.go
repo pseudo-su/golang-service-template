@@ -7,28 +7,27 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/pseudo-su/golang-service-template/internal/config"
-	"github.com/pseudo-su/golang-service-template/pkg"
 	log "github.com/sirupsen/logrus"
 )
 
 //nolint:go-lint
 type PetsRouteCfg interface{}
 
-var pets pkg.Pets
+var pets Pets
 
 func init() {
-	pets = pkg.Pets{
-		pkg.Pet{
+	pets = Pets{
+		Pet{
 			Id:   1,
 			Name: "Rex",
 			Tag:  nil,
 		},
-		pkg.Pet{
+		Pet{
 			Id:   2,
 			Name: "Spot",
 			Tag:  nil,
 		},
-		pkg.Pet{
+		Pet{
 			Id:   3,
 			Name: "Barry",
 			Tag:  nil,
@@ -56,7 +55,7 @@ func CreatePetRoute(cfg PetsRouteCfg) *config.Route {
 		Method: http.MethodPost,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			pet := pkg.Pet{
+			pet := Pet{
 				Id:   int64(len(pets) + 1),
 				Name: "Rex",
 				Tag:  nil,
@@ -88,7 +87,7 @@ func GetPetRoute(cfg PetsRouteCfg) *config.Route {
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
-			var pet pkg.Pet
+			var pet Pet
 			for _, p := range pets {
 				if p.Id == petId {
 					pet = p
