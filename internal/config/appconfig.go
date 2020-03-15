@@ -1,29 +1,29 @@
 package config
 
-type ApplicationConfig struct {
+type ApplicationContext struct {
 	envValues *envConfig
 }
 
-//NewApplicationConfig loads config values from environment and initializes config
-func NewApplicationConfig() *ApplicationConfig {
+//NewApplicationContext loads config values from environment and initializes config
+func NewApplicationContext() *ApplicationContext {
 	envValues := newEnvironmentConfig()
 
-	return &ApplicationConfig{
+	return &ApplicationContext{
 		envValues: envValues,
 	}
 }
 
 //ServerPort returns the port no to listen for requests
-func (cfg *ApplicationConfig) ServerPort() int {
-	return cfg.envValues.ServerPort
+func (appCtx *ApplicationContext) ServerPort() int {
+	return appCtx.envValues.ServerPort
 }
 
 //ServiceBasepath returns the authorisation scope prefix
-func (cfg *ApplicationConfig) Env() string {
-	return cfg.envValues.Env
+func (appCtx *ApplicationContext) Env() string {
+	return appCtx.envValues.Env
 }
 
 //ServiceBasepath returns the authorisation scope prefix
-func (cfg *ApplicationConfig) ServiceBasepath() string {
-	return cfg.envValues.APIBasepath
+func (appCtx *ApplicationContext) ServiceBasepath() string {
+	return appCtx.envValues.APIBasepath
 }

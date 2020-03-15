@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type OpenAPIRouteCfg interface {
+type OpenAPIRouteContext interface {
 	Env() string
 	ServiceBasepath() string
 }
@@ -48,43 +48,43 @@ func GetOpenAPISpecFn() GetBytesFn {
 	}
 }
 
-func OpenAPISpecRoute(cfg OpenAPIRouteCfg) (route *config.Route) {
+func OpenAPISpecRoute(routeCtx OpenAPIRouteContext) (route *config.Route) {
 	routePath := fmt.Sprintf("/%s", SpecPath)
 
-	specPath := fmt.Sprintf("%s/%s", cfg.ServiceBasepath(), SpecPath)
-	redirectURLPath := fmt.Sprintf("%s/%s", cfg.ServiceBasepath(), RedirectPath)
+	specPath := fmt.Sprintf("%s/%s", routeCtx.ServiceBasepath(), SpecPath)
+	redirectURLPath := fmt.Sprintf("%s/%s", routeCtx.ServiceBasepath(), RedirectPath)
 
 	route = &config.Route{
 		Path:    routePath,
 		Method:  http.MethodGet,
-		Handler: createServeBytesHandler(cfg.Env(), specPath, redirectURLPath, "application/json", GetOpenAPISpecFn()),
+		Handler: createServeBytesHandler(routeCtx.Env(), specPath, redirectURLPath, "application/json", GetOpenAPISpecFn()),
 	}
 	return route
 }
 
-func SwaggerUIRoute(cfg OpenAPIRouteCfg) (route *config.Route) {
+func SwaggerUIRoute(routeCtx OpenAPIRouteContext) (route *config.Route) {
 	routePath := fmt.Sprintf("/%s", UIPath)
 
-	specPath := fmt.Sprintf("%s/%s", cfg.ServiceBasepath(), SpecPath)
-	redirectURLPath := fmt.Sprintf("%s/%s", cfg.ServiceBasepath(), RedirectPath)
+	specPath := fmt.Sprintf("%s/%s", routeCtx.ServiceBasepath(), SpecPath)
+	redirectURLPath := fmt.Sprintf("%s/%s", routeCtx.ServiceBasepath(), RedirectPath)
 
 	route = &config.Route{
 		Path:    routePath,
 		Method:  http.MethodGet,
-		Handler: createServeBytesHandler(cfg.Env(), specPath, redirectURLPath, "text/html", GetSwaggerUIPage),
+		Handler: createServeBytesHandler(routeCtx.Env(), specPath, redirectURLPath, "text/html", GetSwaggerUIPage),
 	}
 	return route
 }
 
-func SwaggerUIRedirectRoute(cfg OpenAPIRouteCfg) (route *config.Route) {
+func SwaggerUIRedirectRoute(routeCtx OpenAPIRouteContext) (route *config.Route) {
 	routePath := fmt.Sprintf("/%s", RedirectPath)
-	specPath := fmt.Sprintf("%s/%s", cfg.ServiceBasepath(), SpecPath)
-	redirectURLPath := fmt.Sprintf("%s/%s", cfg.ServiceBasepath(), RedirectPath)
+	specPath := fmt.Sprintf("%s/%s", routeCtx.ServiceBasepath(), SpecPath)
+	redirectURLPath := fmt.Sprintf("%s/%s", routeCtx.ServiceBasepath(), RedirectPath)
 
 	route = &config.Route{
 		Path:    routePath,
 		Method:  http.MethodGet,
-		Handler: createServeBytesHandler(cfg.Env(), specPath, redirectURLPath, "text/html", GetOauth2RedirectPage),
+		Handler: createServeBytesHandler(routeCtx.Env(), specPath, redirectURLPath, "text/html", GetOauth2RedirectPage),
 	}
 	return route
 }

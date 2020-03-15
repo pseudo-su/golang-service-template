@@ -6,8 +6,8 @@ import (
 )
 
 func main() {
-	cfg := config.NewApplicationConfig()
-	server := internal.Bootstrap(cfg)
+	appCtx := config.NewApplicationContext()
+	server := internal.Bootstrap(appCtx)
 
-	server.Start(cfg.ServerPort())
+	server.Start(appCtx.ServerPort())
 }

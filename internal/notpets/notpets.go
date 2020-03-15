@@ -8,7 +8,7 @@ import (
 )
 
 //nolint:go-lint
-type NotPetsRouteCfg interface{}
+type NotPetsRouteContext interface{}
 
 var notpets NotPets
 
@@ -32,7 +32,7 @@ func init() {
 	}
 }
 
-func ListNotPetsRoute(cfg NotPetsRouteCfg) *config.Route {
+func ListNotPetsRoute(routeCtx NotPetsRouteContext) *config.Route {
 	return &config.Route{
 		Path:   "/pets",
 		Method: http.MethodGet,
