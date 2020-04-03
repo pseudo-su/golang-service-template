@@ -5,7 +5,6 @@ help:
 	@echo "Targets:"
 	@echo "    setup:              install the development dependencies"
 	@echo "    generate:           rerun code generation"
-	@echo "    update-vendor:      tidy and update vendor/"
 	@echo "    test-unit:          run unit tests"
 	@echo "    test-integration:   run integration tests"
 	@echo "    test-smoke:         run smoke tests"
@@ -18,6 +17,9 @@ setup:
 
 generate:
 	go generate ./...
+
+lint:
+	./bin/golangci-lint run ./...
 
 test: test-unit test-integration
 
