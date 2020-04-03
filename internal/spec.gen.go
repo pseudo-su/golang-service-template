@@ -15,19 +15,19 @@ import (
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/8xVy27jRhD8lUEnhwSgRXk3yIG3ZGMgAvJYIHtb+NBLNqnZzMs9TVmCwH8PZoa0vZIc",
-	"J0AC+CQ+pqurqrvEI7TeBu/ISYTmCLHdksV8ecPsOV0E9oFYNOXHre8o/faeLQo0oJ28fQMVyCFQuaWB",
-	"GKYKLMWIQz49v4zC2g0wTRUw3Y2aqYPmY8F8PH/7AOY/faZWEtZ7knMuujtl8v13F5k4tJdoVCA4vExP",
-	"dzBDPMOskBGy+eJrph4a+Kp+tLaefa2TjOkBBJnxAFPqp13vU7HRLbmYyRbS8OvmQy7RYtLtH/c4DMQq",
-	"tRXPybcdcdTeQQPXq/VqnU77QA6Dhgbe5kcVBJRtpleHmfBQLE2GomjvNh00YHSUrChVMFoS4gjNxyN0",
-	"FFvWQUqnn/29sugOKstW4hWTjOwUivKOlGhL6huLe3W9Xn8LSSA0cDcSHxYzUzOrBZ6a3aOJVM1r+I/W",
-	"bLpN9TF4F8tSvFmvy546IZcVYghGt1lj/Tkm+scnHV4YVyzz+VL9DyrgQJ3KA1S+V6FYtiXssl9H2F85",
-	"2uf2p6VGuz+TYbIllc5krATyKOOpA6e7Wdj0OBr5z3SWrF8QOjraB2qFOkXzmQriaC3yARr4RUdRaMyi",
-	"X3BIywL59naqIPh4YclaJhSa1+xkeNfnlv02GvNgDrwi+e+yDoVJ/rn6qSpZq4+BZNNNz2Yubv39e5If",
-	"D5vupdh92JLSXVqWtD2BZE4ea9rRkrIU9ceQ5eZfhEx4pL/bsP85UZeMvllsXhonXah2aHR6djdSlNc0",
-	"+Y3rveo9K1QxUKt73T6zBKmMeLeMc2QDDdSDN+iGq/RGt3QlZINBoXp3DadM3o3M5ET95C1qB1O1gGxF",
-	"Qmzq+tjlN9O/Af1dtsQLZAU7ZI2fTBl3gSsxnN0GDHpFe7TB0Kr19gzvxgmxasco3qoCkP/ikId54E9Z",
-	"N3UORvp8rWL5nq20Tzyn2+mvAAAA//+J82hQkwgAAA==",
+	"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",
+	"X6tVLJ+vlfaJ53Q7/RUAAP//uu7TF4IIAAA=",
 }
 
 // GetOpenAPISpec returns the Swagger specification corresponding to the generated code
