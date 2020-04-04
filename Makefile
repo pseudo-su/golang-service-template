@@ -12,8 +12,12 @@ help:
 setup:
 	# install golanglint-ci into ./bin
 	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.16.0
+	# install spectral into ./bin
+	curl -sfL https://raw.githack.com/stoplightio/spectral/master/scripts/install.sh | sed 's#/usr/local/bin/spectral#./bin/spectral#g'  | sh
 	# Install gobin globally
 	env GO111MODULE=off go get -u github.com/myitcv/gobin
+	# Download packages in go.mod file
+	go mod download
 
 generate:
 	go generate ./...
@@ -22,7 +26,7 @@ lint:
 	# Lint go files
 	./bin/golangci-lint run ./...
 	# Lint OpenAPI spec
-	docker run --rm -it stoplight/spectral lint "./openapi.yaml"
+	./bin/spectral lint ./openapi.yaml
 
 test: test-unit test-integration
 
