@@ -9,3 +9,5 @@ RUN apk add --no-cache ca-certificates \
         gcc \
         musl-dev \
         bash
+
+RUN GO111MODULE=off go get -u github.com/myitcv/gobin
