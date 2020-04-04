@@ -44,12 +44,15 @@ test-smoke:
 
 report-test-unit:
 	go test -count=1 -coverprofile=reports/test-unit.out -v -p 5 ./cmd/... ./internal/... ./pkg/... | gobin -m -run github.com/apg/patter > reports/test-unit.tap
+	cat reports/test-unit.tap
 
 report-test-integration:
 	go test -count=1 -coverprofile=reports/test-integration.out -v -p 5 ./test-suites/integration/... | gobin -m -run github.com/apg/patter > reports/test-integration.tap
+	cat reports/test-integration.tap
 
 report-test-smoke:
 	go test -count=1 -coverprofile=reports/test-smoke.out -v -p 5 ./test-suites/smoke/... | gobin -m -run github.com/apg/patter > reports/test-smoke.tap
+	cat reports/test-smoke.tap
 
 .PHONY: \
 	install-deps \
