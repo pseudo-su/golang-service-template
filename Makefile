@@ -27,7 +27,7 @@ lint:
 	# Lint go files
 	./bin/golangci-lint run ./...
 	# Lint OpenAPI spec
-	./bin/spectral lint ./openapi.yaml
+	./bin/spectral lint --fail-severity=warn ./openapi.yaml
 
 test: test-unit test-integration
 

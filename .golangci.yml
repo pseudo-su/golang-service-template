@@ -45,10 +45,10 @@ linters-settings:
       - style
     disabled-checks:
       - dupImport # https://github.com/go-critic/go-critic/issues/845
+      - wrapperFunc
+      - whyNoLint
       - ifElseChain
       - octalLiteral
-      - whyNoLint
-      - wrapperFunc
 
 linters:
   # disable-all: true
@@ -104,3 +104,15 @@ issues:
     - text: "weak cryptographic primitive"
       linters:
         - gosec
+    - linters:
+        - lll
+      source: "^//go:generate "
+    - linters:
+        - lll
+      source: "^////go:generate "
+    - linters:
+        - gocritic
+      source: "^//go:generate "
+    - linters:
+        - gocritic
+      source: "^////go:generate "
