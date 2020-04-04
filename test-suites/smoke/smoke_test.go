@@ -16,7 +16,7 @@ type TestSuite struct {
 	suite.Suite
 	server    *config.Server
 	suiteCtx  *TestSuiteContext
-	apiClient *pkg.ClientWithResponses
+	apiClient *pkg.Client
 }
 
 //nolint:stylecheck
@@ -24,7 +24,7 @@ func (s *TestSuite) SetupSuite() {
 	s.suiteCtx = ParseSuiteConfig()
 	serverBaseURL := buildBaseURL(s.suiteCtx)
 
-	apiClient, err := pkg.NewClientWithResponses(serverBaseURL)
+	apiClient, err := pkg.NewClient(serverBaseURL)
 	if err != nil {
 		panic(err)
 	}

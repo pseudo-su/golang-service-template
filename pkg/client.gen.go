@@ -24,8 +24,53 @@ type HttpRequestDoer interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-// Client which conforms to the OpenAPI3 specification for this service.
-type Client struct {
+type DoFn func(r *http.Request) (*http.Response, error)
+
+// RoundTripMiddleware lets you define functions that can intercept and manipulate
+// the round trip of a single HTTP transaction
+type RoundTripMiddleware func(next DoFn) DoFn
+
+// DoFn returns the result of applying the middleware to the provided DoFn
+func (rtm RoundTripMiddleware) DoFn(doFn DoFn) DoFn {
+	return rtm(doFn)
+}
+
+func joinMiddleware(mw ...RoundTripMiddleware) RoundTripMiddleware {
+	if len(mw) < 1 {
+		return func(doFn DoFn) DoFn {
+			return doFn
+		}
+	}
+	middleware := mw[len(mw)-1]
+	for i := len(mw) - 2; i >= 0; i-- {
+		middleware = middleware.Wrap(mw[i])
+	}
+	return middleware
+}
+
+func (mw RoundTripMiddleware) Wrap(wrapMw RoundTripMiddleware) RoundTripMiddleware {
+	return func(doFn DoFn) DoFn {
+		return wrapMw(mw(doFn))
+	}
+}
+
+// RoundTripMiddlewares allows configuring a RoundTripMiddleware for individual endpoints
+type RoundTripMiddlewares struct {
+	ListPets    RoundTripMiddleware
+	CreatePets  RoundTripMiddleware
+	ShowPetById RoundTripMiddleware
+}
+
+// operationDoFunctions lets the client store Do functions using different
+// middleware for each operation
+type operationDoFunctions struct {
+	ListPets    DoFn
+	CreatePets  DoFn
+	ShowPetById DoFn
+}
+
+// generatedClient which conforms to the OpenAPI3 specification for this service.
+type generatedClient struct {
 	// The endpoint of the server conforming to this interface, with scheme,
 	// https://api.deepmap.com for example.
 	Server string
@@ -37,15 +82,29 @@ type Client struct {
 	// A callback for modifying requests which are generated before sending over
 	// the network.
 	RequestEditor RequestEditorFn
+
+	// SharedRoundTripMiddleware lets you apply a RoundTripMiddleware on all
+	// operations.
+	SharedRoundTripMiddleware RoundTripMiddleware
+
+	// RoundTripMiddlewares lets you apply a RoundTripMiddleware on specific
+	// operations.
+	RoundTripMiddlewares RoundTripMiddlewares
+
+	// operationDoers is the set of Do functions for each operation that is created
+	// for the client.
+	operationDoers *operationDoFunctions
 }
 
-// ClientOption allows setting custom parameters during construction
-type ClientOption func(*Client) error
+var _ generatedClientInterface = &generatedClient{}
 
-// Creates a new Client, with reasonable defaults
-func NewClient(server string, opts ...ClientOption) (*Client, error) {
+// clientOption allows setting custom parameters during construction
+type clientOption func(*generatedClient) error
+
+// newGeneratedClient Creates a new Client, with reasonable defaults
+func newGeneratedClient(server string, opts ...clientOption) (*generatedClient, error) {
 	// create a client with sane default values
-	client := Client{
+	client := generatedClient{
 		Server: server,
 	}
 	// mutate client and add all optional params
@@ -62,82 +121,155 @@ func NewClient(server string, opts ...ClientOption) (*Client, error) {
 	if client.Client == nil {
 		client.Client = http.DefaultClient
 	}
+
+	client.operationDoers = setupOperationDoers(&client, client.RoundTripMiddlewares)
+
 	return &client, nil
+}
+
+func setupOperationDoers(c *generatedClient, rtMiddlewares RoundTripMiddlewares) *operationDoFunctions {
+
+	sharedMiddlewares := []RoundTripMiddleware{}
+
+	if c.RequestEditor != nil {
+		mw := newRequestEditorMiddleware(c.RequestEditor)
+		sharedMiddlewares = append(sharedMiddlewares, mw)
+	}
+
+	if c.SharedRoundTripMiddleware != nil {
+		sharedMiddlewares = append(sharedMiddlewares, c.SharedRoundTripMiddleware)
+	}
+
+	sharedMiddleware := joinMiddleware(sharedMiddlewares...)
+
+	operationDoers := operationDoFunctions{}
+
+	// ListPets
+	if rtMiddlewares.ListPets != nil {
+		mw := joinMiddleware(sharedMiddleware, rtMiddlewares.ListPets)
+		operationDoers.ListPets = mw.DoFn(c.Client.Do)
+	} else {
+		operationDoers.ListPets = sharedMiddleware.DoFn(c.Client.Do)
+	}
+	// CreatePets
+	if rtMiddlewares.CreatePets != nil {
+		mw := joinMiddleware(sharedMiddleware, rtMiddlewares.CreatePets)
+		operationDoers.CreatePets = mw.DoFn(c.Client.Do)
+	} else {
+		operationDoers.CreatePets = sharedMiddleware.DoFn(c.Client.Do)
+	}
+	// ShowPetById
+	if rtMiddlewares.ShowPetById != nil {
+		mw := joinMiddleware(sharedMiddleware, rtMiddlewares.ShowPetById)
+		operationDoers.ShowPetById = mw.DoFn(c.Client.Do)
+	} else {
+		operationDoers.ShowPetById = sharedMiddleware.DoFn(c.Client.Do)
+	}
+
+	return &operationDoers
+}
+
+func newRequestEditorMiddleware(requestEditorFn RequestEditorFn) RoundTripMiddleware {
+	return func(next DoFn) DoFn {
+		return func(r *http.Request) (*http.Response, error) {
+			err := requestEditorFn(r.Context(), r)
+			if err != nil {
+				return nil, err
+			}
+			return next(r)
+		}
+	}
+}
+
+// WithSharedRoundTripMiddleware add a middleware that applies to all routes
+func WithSharedRoundTripMiddleware(rtm RoundTripMiddleware) clientOption {
+	return func(c *generatedClient) error {
+		c.SharedRoundTripMiddleware = rtm
+		return nil
+	}
+}
+
+// WithRoundTripMiddlewares Add middlewares that apply to specific routes
+func WithRoundTripMiddlewares(rtMiddlewares RoundTripMiddlewares) clientOption {
+	return func(c *generatedClient) error {
+		c.RoundTripMiddlewares = rtMiddlewares
+		return nil
+	}
 }
 
 // WithHTTPClient allows overriding the default Doer, which is
 // automatically created using http.Client. This is useful for tests.
-func WithHTTPClient(doer HttpRequestDoer) ClientOption {
-	return func(c *Client) error {
+func WithHTTPClient(doer HttpRequestDoer) clientOption {
+	return func(c *generatedClient) error {
 		c.Client = doer
+		return nil
+	}
+}
+
+// WithBaseURL overrides the baseURL.
+func WithBaseURL(baseURL string) clientOption {
+	return func(c *generatedClient) error {
+		newBaseURL, err := url.Parse(baseURL)
+		if err != nil {
+			return err
+		}
+		c.Server = newBaseURL.String()
 		return nil
 	}
 }
 
 // WithRequestEditorFn allows setting up a callback function, which will be
 // called right before sending the request. This can be used to mutate the request.
-func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
-	return func(c *Client) error {
+func WithRequestEditorFn(fn RequestEditorFn) clientOption {
+	return func(c *generatedClient) error {
 		c.RequestEditor = fn
 		return nil
 	}
 }
 
 // The interface specification for the client above.
-type ClientInterface interface {
+type generatedClientInterface interface {
 	// ListPets request
 	ListPets(ctx context.Context, params *ListPetsParams) (*http.Response, error)
+	// ListPetsWithResponse request  and parse response
+	ListPetsWithResponse(ctx context.Context, params *ListPetsParams) (*ListPetsResponse, error)
 
 	// CreatePets request
 	CreatePets(ctx context.Context) (*http.Response, error)
+	// CreatePetsWithResponse request  and parse response
+	CreatePetsWithResponse(ctx context.Context) (*CreatePetsResponse, error)
 
 	// ShowPetById request
 	ShowPetById(ctx context.Context, petId string) (*http.Response, error)
+	// ShowPetByIdWithResponse request  and parse response
+	ShowPetByIdWithResponse(ctx context.Context, petId string) (*ShowPetByIdResponse, error)
 }
 
-func (c *Client) ListPets(ctx context.Context, params *ListPetsParams) (*http.Response, error) {
+func (c *generatedClient) ListPets(ctx context.Context, params *ListPetsParams) (*http.Response, error) {
 	req, err := NewListPetsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
 	req = req.WithContext(ctx)
-	if c.RequestEditor != nil {
-		err = c.RequestEditor(ctx, req)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return c.Client.Do(req)
+	return c.operationDoers.ListPets(req)
 }
 
-func (c *Client) CreatePets(ctx context.Context) (*http.Response, error) {
+func (c *generatedClient) CreatePets(ctx context.Context) (*http.Response, error) {
 	req, err := NewCreatePetsRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
 	req = req.WithContext(ctx)
-	if c.RequestEditor != nil {
-		err = c.RequestEditor(ctx, req)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return c.Client.Do(req)
+	return c.operationDoers.CreatePets(req)
 }
 
-func (c *Client) ShowPetById(ctx context.Context, petId string) (*http.Response, error) {
+func (c *generatedClient) ShowPetById(ctx context.Context, petId string) (*http.Response, error) {
 	req, err := NewShowPetByIdRequest(c.Server, petId)
 	if err != nil {
 		return nil, err
 	}
 	req = req.WithContext(ctx)
-	if c.RequestEditor != nil {
-		err = c.RequestEditor(ctx, req)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return c.Client.Do(req)
+	return c.operationDoers.ShowPetById(req)
 }
 
 // NewListPetsRequest generates requests for ListPets
@@ -248,34 +380,7 @@ func NewShowPetByIdRequest(server string, petId string) (*http.Request, error) {
 	return req, nil
 }
 
-// ClientWithResponses builds on ClientInterface to offer response payloads
-type ClientWithResponses struct {
-	ClientInterface
-}
-
-// NewClientWithResponses creates a new ClientWithResponses, which wraps
-// Client with return type handling
-func NewClientWithResponses(server string, opts ...ClientOption) (*ClientWithResponses, error) {
-	client, err := NewClient(server, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &ClientWithResponses{client}, nil
-}
-
-// WithBaseURL overrides the baseURL.
-func WithBaseURL(baseURL string) ClientOption {
-	return func(c *Client) error {
-		newBaseURL, err := url.Parse(baseURL)
-		if err != nil {
-			return err
-		}
-		c.Server = newBaseURL.String()
-		return nil
-	}
-}
-
-type listPetsResponse struct {
+type ListPetsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Pets
@@ -283,7 +388,7 @@ type listPetsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r listPetsResponse) Status() string {
+func (r ListPetsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -291,21 +396,21 @@ func (r listPetsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listPetsResponse) StatusCode() int {
+func (r ListPetsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type createPetsResponse struct {
+type CreatePetsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSONDefault  *Error
 }
 
 // Status returns HTTPResponse.Status
-func (r createPetsResponse) Status() string {
+func (r CreatePetsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -313,14 +418,14 @@ func (r createPetsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r createPetsResponse) StatusCode() int {
+func (r CreatePetsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type showPetByIdResponse struct {
+type ShowPetByIdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Pet
@@ -328,7 +433,7 @@ type showPetByIdResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r showPetByIdResponse) Status() string {
+func (r ShowPetByIdResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -336,7 +441,7 @@ func (r showPetByIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r showPetByIdResponse) StatusCode() int {
+func (r ShowPetByIdResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -344,7 +449,7 @@ func (r showPetByIdResponse) StatusCode() int {
 }
 
 // ListPetsWithResponse request returning *ListPetsResponse
-func (c *ClientWithResponses) ListPetsWithResponse(ctx context.Context, params *ListPetsParams) (*listPetsResponse, error) {
+func (c *generatedClient) ListPetsWithResponse(ctx context.Context, params *ListPetsParams) (*ListPetsResponse, error) {
 	rsp, err := c.ListPets(ctx, params)
 	if err != nil {
 		return nil, err
@@ -353,7 +458,7 @@ func (c *ClientWithResponses) ListPetsWithResponse(ctx context.Context, params *
 }
 
 // CreatePetsWithResponse request returning *CreatePetsResponse
-func (c *ClientWithResponses) CreatePetsWithResponse(ctx context.Context) (*createPetsResponse, error) {
+func (c *generatedClient) CreatePetsWithResponse(ctx context.Context) (*CreatePetsResponse, error) {
 	rsp, err := c.CreatePets(ctx)
 	if err != nil {
 		return nil, err
@@ -362,7 +467,7 @@ func (c *ClientWithResponses) CreatePetsWithResponse(ctx context.Context) (*crea
 }
 
 // ShowPetByIdWithResponse request returning *ShowPetByIdResponse
-func (c *ClientWithResponses) ShowPetByIdWithResponse(ctx context.Context, petId string) (*showPetByIdResponse, error) {
+func (c *generatedClient) ShowPetByIdWithResponse(ctx context.Context, petId string) (*ShowPetByIdResponse, error) {
 	rsp, err := c.ShowPetById(ctx, petId)
 	if err != nil {
 		return nil, err
@@ -371,14 +476,14 @@ func (c *ClientWithResponses) ShowPetByIdWithResponse(ctx context.Context, petId
 }
 
 // ParseListPetsResponse parses an HTTP response from a ListPetsWithResponse call
-func ParseListPetsResponse(rsp *http.Response) (*listPetsResponse, error) {
+func ParseListPetsResponse(rsp *http.Response) (*ListPetsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listPetsResponse{
+	response := &ListPetsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -404,14 +509,14 @@ func ParseListPetsResponse(rsp *http.Response) (*listPetsResponse, error) {
 }
 
 // ParseCreatePetsResponse parses an HTTP response from a CreatePetsWithResponse call
-func ParseCreatePetsResponse(rsp *http.Response) (*createPetsResponse, error) {
+func ParseCreatePetsResponse(rsp *http.Response) (*CreatePetsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &createPetsResponse{
+	response := &CreatePetsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -430,14 +535,14 @@ func ParseCreatePetsResponse(rsp *http.Response) (*createPetsResponse, error) {
 }
 
 // ParseShowPetByIdResponse parses an HTTP response from a ShowPetByIdWithResponse call
-func ParseShowPetByIdResponse(rsp *http.Response) (*showPetByIdResponse, error) {
+func ParseShowPetByIdResponse(rsp *http.Response) (*ShowPetByIdResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &showPetByIdResponse{
+	response := &ShowPetByIdResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
