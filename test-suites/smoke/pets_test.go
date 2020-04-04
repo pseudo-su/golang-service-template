@@ -6,29 +6,32 @@ import (
 
 	"github.com/pseudo-su/golang-service-template/pkg"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func (suite *TestSuite) TestListPets() {
 	t := suite.T()
 	ctx := context.Background()
 	params := pkg.ListPetsParams{}
-	_, err := suite.apiClient.ListPetsWithResponse(ctx, &params)
+	pets, err := suite.apiClient.ListPets(ctx, &params)
 	fmt.Println(err)
-	assert.Equal(t, nil, err)
+	require.Equal(t, nil, err)
+	assert.NotEmpty(t, pets)
 }
 
 func (suite *TestSuite) TestCreatePet() {
 	t := suite.T()
 	ctx := context.Background()
-	_, err := suite.apiClient.CreatePetsWithResponse(ctx)
+	err := suite.apiClient.CreatePets(ctx)
 	fmt.Println(err)
-	assert.Equal(t, nil, err)
+	require.Equal(t, nil, err)
 }
 
 func (suite *TestSuite) TestShowPetById() {
 	t := suite.T()
 	ctx := context.Background()
-	_, err := suite.apiClient.ShowPetByIdWithResponse(ctx, "2")
+	pet, err := suite.apiClient.ShowPetById(ctx, "2")
 	fmt.Println(err)
-	assert.Equal(t, nil, err)
+	require.Equal(t, nil, err)
+	assert.NotEmpty(t, pet)
 }

@@ -17,13 +17,13 @@ type TestSuite struct {
 	suite.Suite
 	server    *config.Server
 	suiteCtx  *TestSuiteContext
-	apiClient *pkg.ClientWithResponses
+	apiClient *pkg.Client
 }
 
 func (suite *TestSuite) SetupSuite() {
 	suite.suiteCtx = ParseSuiteConfig()
 	serverBaseURL := buildBaseURL(suite.suiteCtx)
-	apiClient, err := pkg.NewClientWithResponses(serverBaseURL)
+	apiClient, err := pkg.NewClient(serverBaseURL)
 	if err != nil {
 		panic(err)
 	}
