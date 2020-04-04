@@ -27,10 +27,10 @@ func (suite *TestSuite) TestCreatePet() {
 	require.Equal(t, nil, err)
 }
 
-func (suite *TestSuite) TestShowPetById() {
+func (suite *TestSuite) TestShowPetByID() {
 	t := suite.T()
 	ctx := context.Background()
-	pet, err := suite.apiClient.ShowPetById(ctx, "2")
+	pet, err := suite.apiClient.ShowPetByID(ctx, "2")
 	fmt.Println(err)
 	require.Equal(t, nil, err)
 	assert.NotEmpty(t, pet)

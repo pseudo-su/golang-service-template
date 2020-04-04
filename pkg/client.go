@@ -2,19 +2,18 @@ package pkg
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 )
 
-// Client ...
+// Client is the API client to make requests against golang-service-template
 type Client struct {
 	gen generatedClientInterface
 }
 
 var _ ClientInterface = &Client{}
 
-// ClientInterface ...
+// Client is the API client interface to make requests against golang-service-template
 type ClientInterface interface {
 	// ListPets request
 	ListPets(ctx context.Context, params *ListPetsParams) (*Pets, error)
@@ -22,11 +21,11 @@ type ClientInterface interface {
 	// CreatePets request
 	CreatePets(ctx context.Context) error
 
-	// ShowPetById request
-	ShowPetById(ctx context.Context, petId string) (*Pet, error)
+	// ShowPetByID request
+	ShowPetByID(ctx context.Context, petID string) (*Pet, error)
 }
 
-// NewClient ...
+// NewClient initializes and returns a Client configured using options
 func NewClient(server string, opts ...clientOption) (*Client, error) {
 	genClient, err := newGeneratedClient(server, opts...)
 	if err != nil {
@@ -39,7 +38,16 @@ func (e *Error) Error() string {
 	return fmt.Sprintf("Error code: '%v', message: '%s'", e.Code, e.Message)
 }
 
-// ListPets ...
+func unexpectedResponse(resp *http.Response) error {
+	return fmt.Errorf(
+		"unexpected response from url '%s': statusCode '%v', status '%s'",
+		resp.Request.URL.String(),
+		resp.StatusCode,
+		resp.Status,
+	)
+}
+
+// ListPets returns a list of pets
 func (c *Client) ListPets(ctx context.Context, params *ListPetsParams) (*Pets, error) {
 	resp, err := c.gen.ListPetsWithResponse(ctx, params)
 	if err != nil {
@@ -52,11 +60,11 @@ func (c *Client) ListPets(ctx context.Context, params *ListPetsParams) (*Pets, e
 	case resp.JSONDefault != nil:
 		return nil, resp.JSONDefault
 	default:
-		return nil, errors.New("Unexpected response")
+		return nil, unexpectedResponse(resp.HTTPResponse)
 	}
 }
 
-// ListPets ...
+// CreatePets creates a new Pet
 func (c *Client) CreatePets(ctx context.Context) error {
 	resp, err := c.gen.CreatePetsWithResponse(ctx)
 	if err != nil {
@@ -69,13 +77,13 @@ func (c *Client) CreatePets(ctx context.Context) error {
 	case resp.JSONDefault != nil:
 		return resp.JSONDefault
 	default:
-		return errors.New("Unexpected response")
+		return unexpectedResponse(resp.HTTPResponse)
 	}
 }
 
-// ListPets ...
-func (c *Client) ShowPetById(ctx context.Context, petId string) (*Pet, error) {
-	resp, err := c.gen.ShowPetByIdWithResponse(ctx, petId)
+// ShowPetById returns a Pet if one is found for a given ID
+func (c *Client) ShowPetByID(ctx context.Context, petID string) (*Pet, error) {
+	resp, err := c.gen.ShowPetByIdWithResponse(ctx, petID)
 	if err != nil {
 		return nil, err
 	}
@@ -86,6 +94,6 @@ func (c *Client) ShowPetById(ctx context.Context, petId string) (*Pet, error) {
 	case resp.JSONDefault != nil:
 		return nil, resp.JSONDefault
 	default:
-		return nil, fmt.Errorf("Unexpected response: statusCode '%v', status '%s'", resp.StatusCode(), resp.Status())
+		return nil, unexpectedResponse(resp.HTTPResponse)
 	}
 }
