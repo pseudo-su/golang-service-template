@@ -5,13 +5,14 @@ help:
 	@echo "Targets:"
 	@echo "    setup:              install the development dependencies"
 	@echo "    generate:           rerun code generation"
+	@echo "    lint:               run linters"
 	@echo "    test-unit:          run unit tests"
 	@echo "    test-integration:   run integration tests"
 	@echo "    test-smoke:         run smoke tests"
 
 setup:
 	# install golanglint-ci into ./bin
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.16.0
+	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.24.0
 	# install spectral into ./bin
 	curl -sfL https://raw.githack.com/stoplightio/spectral/master/scripts/install.sh | sed 's#/usr/local/bin/spectral#./bin/spectral#g'  | sh
 	# Install gobin globally
