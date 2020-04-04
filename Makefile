@@ -19,7 +19,10 @@ generate:
 	go generate ./...
 
 lint:
+	# Lint go files
 	./bin/golangci-lint run ./...
+	# Lint OpenAPI spec
+	docker run --rm -it stoplight/spectral lint "./openapi.yaml"
 
 test: test-unit test-integration
 

@@ -25,6 +25,7 @@ jobs:
     - name: Lint
       run: |
         ./bin/golangci-lint run ./...
+        docker run --rm -it stoplight/spectral lint "./openapi.yaml"
 
     - name: Unit Test
       run: |
