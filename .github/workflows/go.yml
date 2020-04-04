@@ -18,10 +18,7 @@ jobs:
 
     - name: Get dependencies
       run: |
-        curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.16.0
-        curl -sfL https://raw.githack.com/stoplightio/spectral/master/scripts/install.sh | sed 's#/usr/local/bin/spectral#./bin/spectral#g'  | sh
-        env GO111MODULE=off go get -u github.com/myitcv/gobin
-        go mod download
+        make setup
 
     - name: Lint Go code
       run: |
