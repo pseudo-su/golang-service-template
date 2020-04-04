@@ -21,5 +21,6 @@ func newEnvironmentConfig() *envConfig {
 	if err := env.Parse(cfg); err != nil {
 		log.Fatalf("cannot find configs for server: %v \n", err)
 	}
+
 	return cfg
 }

@@ -1,5 +1,4 @@
-//nolint:go-lint
-
+//nolint:lll
 package tools
 
 //go:generate gobin -m -run github.com/deepmap/oapi-codegen/cmd/oapi-codegen --package=pkg --generate types -o ../pkg/models.gen.go ../openapi.yaml

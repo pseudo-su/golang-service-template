@@ -47,9 +47,11 @@ func (s *Server) WithRoutes(routes ...*Route) *Server {
 
 func (s *Server) MountRoutes(path string, routes ...*Route) *Server {
 	sub := s.router.PathPrefix(path).Subrouter()
+
 	for _, route := range routes {
 		sub.Handle(route.Path, route.Handler).Methods(route.Method)
 	}
+
 	return s
 }
 
@@ -76,7 +78,7 @@ func (s *Server) WaitShutdown() {
 	irqSig := make(chan os.Signal, 1)
 	signal.Notify(irqSig, syscall.SIGINT, syscall.SIGTERM)
 
-	//Wait interrupt or shutdown request through /shutdown
+	// Wait interrupt or shutdown request through /shutdown
 	select {
 	case sig := <-irqSig:
 		log.Infof("Shutdown request (signal: %v)", sig)
@@ -86,18 +88,18 @@ func (s *Server) WaitShutdown() {
 
 	log.Infof("Stoping http server ...")
 
-	//Create shutdown context with 10 second timeout
+	// Create shutdown context with 10 second timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	//shutdown the server
+	// shutdown the server
 	err := s.Shutdown(ctx)
 	if err != nil {
 		log.Infof("Shutdown request error: %v", err)
 	}
 }
 
-//Start starts the server on the defined port
+// Start starts the server on the defined port
 func (s *Server) Start(port int) {
 	// Set server values
 	s.Handler = s.router
@@ -107,6 +109,7 @@ func (s *Server) Start(port int) {
 	DescribeRoutes(s.router)
 
 	finish := make(chan error)
+
 	go func() {
 		err := s.ListenAndServe()
 		if err != nil {
@@ -115,7 +118,7 @@ func (s *Server) Start(port int) {
 		finish <- err
 	}()
 
-	//wait shutdown
+	// wait shutdown
 	s.WaitShutdown()
 
 	<-finish
@@ -135,5 +138,6 @@ func (route *Route) WithMiddleware(m ...mux.MiddlewareFunc) *Route {
 	}
 
 	route.Handler = hWithMiddleware
+
 	return route
 }
