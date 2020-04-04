@@ -4,6 +4,15 @@ info:
   title: Swagger Petstore
   license:
     name: MIT
+  contact:
+    name: golang-service-template
+    email: contact@golang-service-template.com
+    url: github.com/pseudo-su/golang-service-template
+  description: |
+    This is an example OpenAPI spec to use as a reference when starting a project using github.com/pseudo-su/golang-service-template
+tags:
+  - name: "pets"
+    description: "All things to do with pets"
 servers:
   - url: /golang-service-template/v1
     description: Current Domain
@@ -17,8 +26,9 @@ servers:
 paths:
   /pets:
     get:
-      summary: List all pets
       operationId: listPets
+      summary: List all pets
+      description: List all the pets
       tags:
         - pets
       parameters:
@@ -48,8 +58,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
     post:
-      summary: Create a pet
       operationId: createPets
+      summary: Create a pet
+      description: Create a pet
       tags:
         - pets
       responses:
@@ -63,8 +74,9 @@ paths:
                 $ref: "#/components/schemas/Error"
   /pets/{petId}:
     get:
-      summary: Info for a specific pet
       operationId: showPetById
+      summary: Info for a specific pet
+      description: Info for a specific pet
       tags:
         - pets
       parameters:

@@ -1,3 +1,4 @@
+//nolint:golint,godox,gochecknoinits
 package pets
 
 import (
@@ -11,7 +12,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//nolint:go-lint
 type PetsRouteContext interface{}
 
 var pets pkg.Pets
@@ -45,7 +45,7 @@ func ListPetsRoute(routeCtx PetsRouteContext) *config.Route {
 			resp, _ := json.Marshal(&pets)
 
 			w.WriteHeader(http.StatusOK)
-			w.Write(resp)
+			_, _ = w.Write(resp)
 		}),
 	}
 }
@@ -65,12 +65,12 @@ func CreatePetRoute(routeCtx PetsRouteContext) *config.Route {
 			resp, err := json.Marshal(&pet)
 			if err != nil {
 				// TODO: handle error
-				log.Warn("marshalling error")
+				log.Warn("marshaling error")
 				return
 			}
 
 			w.WriteHeader(http.StatusOK)
-			w.Write(resp)
+			_, _ = w.Write(resp)
 		}),
 	}
 }
@@ -81,7 +81,7 @@ func GetPetRoute(routeCtx PetsRouteContext) *config.Route {
 		Method: http.MethodGet,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			vars := mux.Vars(r)
-			petId, err := strconv.ParseInt(vars["petId"], 10, 64)
+			petID, err := strconv.ParseInt(vars["petId"], 10, 64)
 			if err != nil {
 				// TODO: add validation
 				log.Warn("validation error")
@@ -90,19 +90,19 @@ func GetPetRoute(routeCtx PetsRouteContext) *config.Route {
 			w.Header().Set("Content-Type", "application/json")
 			var pet pkg.Pet
 			for _, p := range pets {
-				if p.Id == petId {
+				if p.Id == petID {
 					pet = p
 				}
 			}
 			resp, err := json.Marshal(&pet)
 			if err != nil {
 				// TODO: handle error
-				log.Warn("marshalling error")
+				log.Warn("marshaling error")
 				return
 			}
 
 			w.WriteHeader(http.StatusOK)
-			w.Write(resp)
+			_, _ = w.Write(resp)
 		}),
 	}
 }

@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-//nolint:go-lint
 type TestSuite struct {
 	suite.Suite
 	server    *config.Server
@@ -20,19 +19,22 @@ type TestSuite struct {
 	apiClient *pkg.Client
 }
 
-func (suite *TestSuite) SetupSuite() {
-	suite.suiteCtx = ParseSuiteConfig()
-	serverBaseURL := buildBaseURL(suite.suiteCtx)
+//nolint:stylecheck
+func (s *TestSuite) SetupSuite() {
+	s.suiteCtx = ParseSuiteConfig()
+	serverBaseURL := buildBaseURL(s.suiteCtx)
+
 	apiClient, err := pkg.NewClient(serverBaseURL)
 	if err != nil {
 		panic(err)
 	}
-	suite.apiClient = apiClient
-	suite.server = internal.Bootstrap(suite.suiteCtx)
 
-	if suite.suiteCtx.envValues.UseEmbeddedServer {
+	s.apiClient = apiClient
+	s.server = internal.Bootstrap(s.suiteCtx)
+
+	if s.suiteCtx.envValues.UseEmbeddedServer {
 		go func() {
-			err := suite.server.ListenAndServe()
+			err := s.server.ListenAndServe()
 			if err != nil {
 				log.Infof("Listen and serve: %v", err)
 			}
@@ -40,8 +42,8 @@ func (suite *TestSuite) SetupSuite() {
 	}
 }
 
-func (suite *TestSuite) TeardownSuite() {
-	suite.server.ShutdownReq <- true
+func (s *TestSuite) TeardownSuite() {
+	s.server.ShutdownReq <- true
 }
 
 func TestRunSuite(t *testing.T) {
@@ -50,6 +52,7 @@ func TestRunSuite(t *testing.T) {
 
 func buildBaseURL(suiteCtx *TestSuiteContext) string {
 	basepath := suiteCtx.ServiceBasepath()
+
 	return fmt.Sprintf(
 		"%s://%s:%v%s",
 		suiteCtx.envValues.APIScheme,
@@ -90,6 +93,7 @@ func ParseSuiteConfig() *TestSuiteContext {
 	if err := env.Parse(envValues); err != nil {
 		log.Fatalf("unable to find env var key: %v \n", err)
 	}
+
 	return &TestSuiteContext{
 		envValues: envValues,
 	}

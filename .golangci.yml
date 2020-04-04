@@ -19,6 +19,11 @@ linters-settings:
   goconst:
     min-len: 2
     min-occurrences: 2
+  gomnd:
+    settings:
+      mnd:
+        # checks: argument,case,condition,return,operation,assign
+        checks: case,condition,return,operation
   depguard:
     list-type: blacklist
     packages:
@@ -32,14 +37,62 @@ linters-settings:
   goimports:
     local-prefixes: github.com/golangci/golangci-lint
   gocritic:
-    enable-all: true
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      - dupImport # https://github.com/go-critic/go-critic/issues/845
+      - wrapperFunc
+      - whyNoLint
+      - ifElseChain
+      - octalLiteral
 
 linters:
-  enable-all: true
-  disable:
+  # disable-all: true
+  enable:
+    - bodyclose
+    - deadcode
+    - depguard
+    - dogsled
+    - dupl
+    - errcheck
+    - funlen
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goimports
+    - golint
+    - gomnd
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - interfacer
+    - lll
+    - misspell
+    - nakedret
+    - rowserrcheck
+    - scopelint
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - varcheck
+    - whitespace
+    # - gochecknoglobals
+    - gocognit
+    - godox
     - maligned
     - prealloc
-    - gochecknoglobals
 
 run:
   skip-dirs:
@@ -51,3 +104,15 @@ issues:
     - text: "weak cryptographic primitive"
       linters:
         - gosec
+    - linters:
+        - lll
+      source: "^//go:generate "
+    - linters:
+        - lll
+      source: "^////go:generate "
+    - linters:
+        - gocritic
+      source: "^//go:generate "
+    - linters:
+        - gocritic
+      source: "^////go:generate "
