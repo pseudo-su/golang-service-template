@@ -20,6 +20,13 @@ jobs:
       run: |
         make setup
 
+    - name: Ensure consistent/idempotent code generation
+      run: |
+        go generate ./...
+        COUNT=$(git status --porcelain | wc -l)
+        echo "$COUNT lines changed after running \"go generate ./...\""
+        exit $COUNT
+
     - name: Lint Go code
       run: |
         ./bin/golangci-lint run ./...
