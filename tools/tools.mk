@@ -31,3 +31,6 @@ tools/jet:
 
 tools/patter:
 	. ./tools/tools.cfg && env GOBIN=$${PWD}/tools go install github.com/apg/patter@$${patter}
+
+tools/mockgen:
+	. ./tools/tools.cfg && env GOBIN=$${PWD}/tools go install github.com/golang/mock/mockgen@v$${mockgen}
