@@ -13,6 +13,12 @@ type Error struct {
 type Pet struct {
 	Id   int64   `json:"id"`
 	Name string  `json:"name"`
+	Tag  *string `json:"tag"`
+}
+
+// PetEditableValues defines model for PetEditableValues.
+type PetEditableValues struct {
+	Name string  `json:"name"`
 	Tag  *string `json:"tag,omitempty"`
 }
 
@@ -23,4 +29,13 @@ type Pets []Pet
 type ListPetsParams struct {
 	// How many items to return at one time (max 100)
 	Limit *int32 `json:"limit,omitempty"`
+
+	// What page
+	Page *int32 `json:"page,omitempty"`
 }
+
+// CreatePetJSONBody defines parameters for CreatePet.
+type CreatePetJSONBody PetEditableValues
+
+// CreatePetJSONRequestBody defines body for CreatePet for application/json ContentType.
+type CreatePetJSONRequestBody CreatePetJSONBody

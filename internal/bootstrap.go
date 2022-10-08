@@ -1,9 +1,11 @@
 package internal
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/pseudo-su/golang-service-template/internal/config"
+	"github.com/pseudo-su/golang-service-template/internal/persistence"
 	"github.com/pseudo-su/golang-service-template/internal/pets"
 	log "github.com/sirupsen/logrus"
 )
@@ -19,10 +21,12 @@ type ApplicationContext interface {
 	Env() string
 	ServiceBasepath() string
 	ServerPort() int
+	SqlDB() *sql.DB
 }
 
 func Bootstrap(appCtx ApplicationContext) *config.Server {
 	basepath := appCtx.ServiceBasepath()
+	petsRepo := persistence.NewPetsRepository(appCtx.SqlDB())
 	server := config.NewServer().
 		WithMiddleware(
 			requestSetupMiddleware,
@@ -32,9 +36,9 @@ func Bootstrap(appCtx ApplicationContext) *config.Server {
 			OpenAPISpecRoute(appCtx),
 			SwaggerUIRoute(appCtx),
 			SwaggerUIRedirectRoute(appCtx),
-			pets.ListPetsRoute(appCtx),
-			pets.CreatePetRoute(appCtx),
-			pets.GetPetRoute(appCtx),
+			pets.ListPetsRoute(appCtx, petsRepo),
+			pets.CreatePetRoute(appCtx, petsRepo),
+			pets.GetPetRoute(appCtx, petsRepo),
 		)
 	return server
 }

@@ -8,6 +8,7 @@ services:
       - service
 
   service:
+    network_mode: host
     container_name: golang-service-template.service
     build:
       context: ..
@@ -15,5 +16,3 @@ services:
     env_file:
       - $PWD/.env
       - $PWD/.env.local
-    ports:
-      - '3000:3000'

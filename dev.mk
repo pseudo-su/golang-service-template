@@ -38,7 +38,7 @@ deps.tools.update: deps.tools.install
 
 ### Test
 
-TEST_DOTENV := ./tools/godotenv -f ./test_suites/.env.local,./test_suites/.env
+TEST_DOTENV := ./tools/godotenv -f ./test_suites/.env.local,./test_suites/.env,.env.test
 TEST_DOTENV_STAGE := ./tools/godotenv -f ./test_suites/.env.${STAGE}.local,./test_suites/.env.${STAGE},./test_suites/.env.local,./test_suites/.env
 TEST_GO := go test -count=1 -v -p=1
 TEST_GO_REPORT := bash -c 'tee >(cat 1>&2)' | ./tools/patter
@@ -69,7 +69,7 @@ test.unit.go:
 
 ## Run Go unit tests and generate reports
 test.unit.go.report: precheck-report
-	${TEST_GO} -coverprofile=reports/test.unit.go.out ./cmd/... ./internal/... ./pkg/... | ${TEST_GO_REPORT} > reports/test.unit.go.tap
+	${TEST_GO} -coverprofile=reports/test.unit.go.out ./cmd/... ./internal/... ./pkg/... | ${TEST_GO_REPORT} > reports/test.unit.go.tap; test "$$PIPESTATUS" = 0
 .PHONY: test.unit.go.report
 
 ## Run OpenAPI unit tests
@@ -93,7 +93,7 @@ test.integration.whitebox: test.precheck-dotenv
 
 ## Run whitebox integration tests and generate reports (require devstack to be running)
 test.integration.whitebox.report: precheck-report test.precheck-dotenv
-	${TEST_DOTENV} ${TEST_GO} ./test_suites/integration_whitebox/... | ${TEST_GO_REPORT} > reports/test.integration.whitebox.tap
+	${TEST_DOTENV} ${TEST_GO} -coverprofile=reports/test.integration.whitebox.out ./test_suites/integration_whitebox/... | tee reports/test.integration.whitebox.tap; test "$$PIPESTATUS" = 0
 .PHONY: test.integration.whitebox.report
 
 ## Run blackbox integration tests (require devstack and app to be running)
@@ -103,7 +103,7 @@ test.integration.blackbox: test.precheck-dotenv
 
 ## Run blackbox integration tests and generate reports (require devstack and app to be running)
 test.integration.blackbox.report: precheck-report test.precheck-dotenv
-	${TEST_DOTENV} ${TEST_GO} ./test_suites/integration_blackbox/... | ${TEST_GO_REPORT} > reports/test.integration.blackbox.tap
+	${TEST_DOTENV} ${TEST_GO} -coverprofile=reports/test.integration.blackbox.out ./test_suites/integration_blackbox/... | ${TEST_GO_REPORT} > reports/test.integration.blackbox.tap; test "$$PIPESTATUS" = 0
 .PHONY: test.integration.blackbox.report
 
 ## Run smoke tests
@@ -115,7 +115,7 @@ test.smoke: test.precheck-dotenv
 ## Run smoke tests and generate reports
 test.smoke.report: test.precheck-dotenv
 	if [ -z "${STAGE}" ]; then echo "STAGE environment variable not set"; exit 1; fi
-	${TEST_DOTENV_STAGE} ${TEST_GO} ./test_suites/smoke/... | ${TEST_GO_REPORT} > reports/test.smoke.${STAGE}.tap
+	${TEST_DOTENV_STAGE} ${TEST_GO} ./test_suites/smoke/... | ${TEST_GO_REPORT} > reports/test.smoke.${STAGE}.tap; test "$$PIPESTATUS" = 0
 .PHONY: test.smoke.report
 
 ### Verify - Code verifiation and Static analysis
@@ -185,7 +185,7 @@ dev.run:
 
 ## Start the development server in the background
 dev.start:
-	 ${DEV_DOCKER_COMPOSE} up -d --remove-orphans app
+	 ${DEV_DOCKER_COMPOSE} up -d --remove-orphans --build app
 .PHONY: dev.start
 
 ## Stop the development server
@@ -266,7 +266,7 @@ devstack.logs.report: precheck-report
 
 ### Database management
 
-DB_MIGRATE := ./tools/migrate -database "postgres://root:1234@localhost:5432/mantel_connect_backend_localdev?sslmode=disable" -source file://./internal/persistence/migrations
+DB_MIGRATE := ./tools/migrate -database "postgres://root:1234@localhost:5432/golang_service_template_localdev?sslmode=disable" -source file://./internal/persistence/migrations
 
 ## Create a new migration in ./internal/persistence/migrations folder
 db.migrate.create:

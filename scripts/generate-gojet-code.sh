@@ -14,10 +14,10 @@ if [[ -d "$CODEGEN_GOJET_DESTINATION" ]]; then
 fi
 
 ./tools/jet \
-  -dsn="postgresql://root:1234@localhost:5432/mantel_connect_backend_localdev?sslmode=disable" \
+  -dsn="postgresql://root:1234@localhost:5432/golang_service_template_localdev?sslmode=disable" \
   -schema=public \
-  -ignore-tables="allocations,guest_check_ins,schema_migrations,user_ids,check_ins,bookings" \
+  -ignore-tables="" \
   -path=$CODEGEN_GOJET_DESTINATION
 
-cp -r $CODEGEN_GOJET_DESTINATION/mantel_connect_backend_localdev/public/* $CODEGEN_GOJET_DESTINATION
-rm -r $CODEGEN_GOJET_DESTINATION/mantel_connect_backend_localdev
+cp -r $CODEGEN_GOJET_DESTINATION/golang_service_template_localdev/public/* $CODEGEN_GOJET_DESTINATION
+rm -r $CODEGEN_GOJET_DESTINATION/golang_service_template_localdev

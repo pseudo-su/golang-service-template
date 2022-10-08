@@ -4,9 +4,11 @@
 package pkg
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -91,8 +93,10 @@ type ClientInterface interface {
 	// ListPets request
 	ListPets(ctx context.Context, params *ListPetsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreatePet request
-	CreatePet(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreatePet request with any body
+	CreatePetWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreatePet(ctx context.Context, body CreatePetJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetPetById request
 	GetPetById(ctx context.Context, petId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -110,8 +114,20 @@ func (c *Client) ListPets(ctx context.Context, params *ListPetsParams, reqEditor
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreatePet(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreatePetRequest(c.Server)
+func (c *Client) CreatePetWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreatePetRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreatePet(ctx context.Context, body CreatePetJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreatePetRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -171,6 +187,22 @@ func NewListPetsRequest(server string, params *ListPetsParams) (*http.Request, e
 
 	}
 
+	if params.Page != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page", runtime.ParamLocationQuery, *params.Page); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -181,8 +213,19 @@ func NewListPetsRequest(server string, params *ListPetsParams) (*http.Request, e
 	return req, nil
 }
 
-// NewCreatePetRequest generates requests for CreatePet
-func NewCreatePetRequest(server string) (*http.Request, error) {
+// NewCreatePetRequest calls the generic CreatePet builder with application/json body
+func NewCreatePetRequest(server string, body CreatePetJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreatePetRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreatePetRequestWithBody generates requests for CreatePet with any type of body
+func NewCreatePetRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -200,10 +243,12 @@ func NewCreatePetRequest(server string) (*http.Request, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -288,8 +333,10 @@ type ClientWithResponsesInterface interface {
 	// ListPets request
 	ListPetsWithResponse(ctx context.Context, params *ListPetsParams, reqEditors ...RequestEditorFn) (*ListPetsResponse, error)
 
-	// CreatePet request
-	CreatePetWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*CreatePetResponse, error)
+	// CreatePet request with any body
+	CreatePetWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreatePetResponse, error)
+
+	CreatePetWithResponse(ctx context.Context, body CreatePetJSONRequestBody, reqEditors ...RequestEditorFn) (*CreatePetResponse, error)
 
 	// GetPetById request
 	GetPetByIdWithResponse(ctx context.Context, petId string, reqEditors ...RequestEditorFn) (*GetPetByIdResponse, error)
@@ -321,6 +368,7 @@ func (r ListPetsResponse) StatusCode() int {
 type CreatePetResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON201      *Pet
 	JSONDefault  *Error
 }
 
@@ -372,9 +420,17 @@ func (c *ClientWithResponses) ListPetsWithResponse(ctx context.Context, params *
 	return ParseListPetsResponse(rsp)
 }
 
-// CreatePetWithResponse request returning *CreatePetResponse
-func (c *ClientWithResponses) CreatePetWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*CreatePetResponse, error) {
-	rsp, err := c.CreatePet(ctx, reqEditors...)
+// CreatePetWithBodyWithResponse request with arbitrary body returning *CreatePetResponse
+func (c *ClientWithResponses) CreatePetWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreatePetResponse, error) {
+	rsp, err := c.CreatePetWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreatePetResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreatePetWithResponse(ctx context.Context, body CreatePetJSONRequestBody, reqEditors ...RequestEditorFn) (*CreatePetResponse, error) {
+	rsp, err := c.CreatePet(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -437,6 +493,13 @@ func ParseCreatePetResponse(rsp *http.Response) (*CreatePetResponse, error) {
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest Pet
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {

@@ -11,8 +11,24 @@ components:
           format: int64
         name:
           type: string
+          example: Rex
         tag:
           type: string
+          nullable: true
+          example: dog
+
+    PetEditableValues:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        name:
+          type: string
+          example: Rex
+        tag:
+          type: string
+          example: dog
 
     Pets:
       type: array

@@ -14,6 +14,15 @@ paths:
           schema:
             type: integer
             format: int32
+            example: 20
+        - name: page
+          in: query
+          description: What page
+          required: false
+          schema:
+            type: integer
+            format: int32
+            example: 1
       responses:
         '200':
           description: A paged array of pets
