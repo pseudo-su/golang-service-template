@@ -4,7 +4,7 @@
 
 This project contains an example golang template/example application with a number of tooling conventions built in.
 
-For more information on the goals and setup see [./TEMPLATE.md](./TEMPLATE.md)
+For more information on the goals and setup see [./docs/template-overview.md](./docs/template-overview.md)
 
 ## Contributing quickstart
 
