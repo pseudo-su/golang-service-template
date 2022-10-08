@@ -1,0 +1,10 @@
+includes:
+  - base.openapi.yml
+
+  # - common.parameters.yml
+  # - common.response-headers.yml
+  # - common.responses.yml
+  - common.schemas.yml
+  # - common.security-schemes.yml
+
+  - operations/_template.yml

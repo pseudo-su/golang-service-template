@@ -7,12 +7,9 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 2
 
-[Makefile]
+[{Makefile,*.mk}]
 indent_size = 4
 indent_style = tab
-
-[*.py]
-indent_size = 4
 
 [{go.mod,go.sum,*.go}]
 indent_size = 4

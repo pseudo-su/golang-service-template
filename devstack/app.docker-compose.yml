@@ -1,0 +1,19 @@
+version: "3"
+services:
+
+  app:
+    image: tianon/true
+    restart: "no"
+    depends_on:
+      - service
+
+  service:
+    container_name: golang-service-template.service
+    build:
+      context: ..
+      dockerfile: Containerfile
+    env_file:
+      - $PWD/.env
+      - $PWD/.env.local
+    ports:
+      - '3000:3000'

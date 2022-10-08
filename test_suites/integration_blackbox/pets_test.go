@@ -1,4 +1,4 @@
-package smoke
+package integration
 
 import (
 	"context"
@@ -20,7 +20,7 @@ func (suite *TestSuite) TestListPets() {
 func (suite *TestSuite) TestCreatePet() {
 	t := suite.T()
 	ctx := context.Background()
-	_, err := suite.apiClient.CreatePetsWithResponse(ctx)
+	_, err := suite.apiClient.CreatePetWithResponse(ctx)
 	fmt.Println(err)
 	assert.Equal(t, nil, err)
 }
@@ -28,7 +28,7 @@ func (suite *TestSuite) TestCreatePet() {
 func (suite *TestSuite) TestShowPetById() {
 	t := suite.T()
 	ctx := context.Background()
-	_, err := suite.apiClient.ShowPetByIdWithResponse(ctx, "2")
+	_, err := suite.apiClient.GetPetByIdWithResponse(ctx, "2")
 	fmt.Println(err)
 	assert.Equal(t, nil, err)
 }

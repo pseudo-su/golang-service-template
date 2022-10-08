@@ -1,62 +1,100 @@
-# Golang Service Template
+# Golang service template
 
-## Quickstart
+## Overview
 
-### Install Tool Dependencies
+This project contains an example golang template/example application with a number of tooling conventions built in.
 
-```shell
-# install golanglint-ci into ./bin
-curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.16.0
-# Install gobin globally
-env GO111MODULE=off go get -u github.com/myitcv/gobin
+For more information on the goals and setup see [./TEMPLATE.md](./TEMPLATE.md)
+
+## Contributing quickstart
+
+### Global dependencies
+
+You will need to have the following global dependencies installed on your local machine
+
+* Go `1.18`
+* Sdkman to manage Java versions (only required for PlantUML generation)
+
+```sh
+# On macs go can be installed through homebrew
+brew install go@1.18
+
+# If using sdkman to manage Java versions
+curl -s "https://get.sdkman.io" | bash
+sdk env install
+sdk env
 ```
 
-### Build tasks
+## Local config files
 
-**NOTE**: if this repo is cloned into you `GOPATH` you will need to prefix all commands with `GO111MODULES=on`
+```sh
+# Copy the example .env.local file (used to override environment variables for local development)
+cp docs/examples/.env.local .
 
-* start: `go run ./cmd`
-* test: `go test ./...`
-* lint: `./bin/golangci-lint run ./...`
-* build: `go build -o golang-service-template ./cmd`
-* code gen: `go generate ./...` [link](https://github.com/go-swagger/go-swagger/issues/1724#issuecomment-469335593)
-
-### Build & run docker container
-
-```shell
-docker build -t golang-service-template .
-docker run -p 8080:80 golang-service-template
+# Copy the recommended vscode settings to your workspace config
+cp .vscode/settings.recommended.json .vscode/settings.json
 ```
 
-## Service Template Details
+If you are using `direnv` (recommended), copy the example `.envrc` file and update it with your desired STAGE name (eg. "stableford"). If you have direnv installed it will automatically load project specific config into your shell when entering the project folder.
 
-### Goals
+```sh
+cp docs/examples/.envrc .
+# edit `.envrc` file to include your own personal STAGE name
+direnv allow
+direnv reload
+```
 
-* Encourage reproducible local dev environments by eliminating reliance on globally installed/gopath tools linters etc (`.vscode/settings.json` to set default IDE settings)
-* Documentation driven development; Models & API Client generated from openapi v3 spec.
-* Embedded documentation (swagger ui) served when deployed to "whitelisted environments".
-* Lightweight wrapper for `http.Server` to make bootstrapping the server easy to read and respect proper os process signals for server start/shutdown.
-* Unit tests, Integration, and Smoke suite skeletons
-* Docker deployment
+## Run development scripts
 
-### Features
+```sh
+# Make sure the correct version of language tooling is active before running any commands
+sdk env;
 
-* Spec-driven development using `oapi-codegen`
-  * `pkg/models.gen.go` Generated Models
-  * `internal/spec.gen.go` Embedded swagger spec and swagger ui (exposed at `/swagger.html` and `openapi.json`)
-  * `pkg/client.gen.go` Generated API client
-* Test suites
-  * `test-suites/integration` Integration tests
-  * `test-suites/smoke` Smoke tests
-* Test reports
-  * `reports/test-unit.out`
-  * `reports/test-unit.tap`
-  * `reports/test-integration.out`
-  * `reports/test-integration.tap`
-  * `reports/test-smoke.tap`
-* When you checkout out the repo for the first time the [`.vscode/settings.json`](https://github.com/pseudo-su/golang-service-template/blob/master/.vscode/settings.json) comes with it (while any further changes you make to it are gitignored).
-  * `go.useLanguageServer: true` to use the official language server implementation from google because it’s required in order to support go modules.
-  * `go.toolsEnvVars.GO111MODULES: "on"` to make sure that all the go tools know to enable go module support for this project (regardless of if it's inside your gopath or not)
-  * `go.toolsEnvVars.GOFLAGS: "-mod=vendor"` if you want to make all go commands use the `vendor/` folder in the project (just like dep did/does)
-  * `go.formatTool: "goimports"`: enables automatically managing/formatting package import statements, I think the golang extension uses `gofmt` by default once you enable the `useLanguageServer` flag
-  * `go.alternateTools.golangci-lint : "${workspaceFolder}/bin/golangci-lint"` This isn't about go modules, I did it because I want to lock down the version of `golangci-lint` and use a project-local version of it (to avoid issues where people have different versions of golangci-lint globally installed and there’s no way for a project to specify the exact version to use)
+# show available makefile targets
+make help;
+
+# Install project dependencies (installs dependencies and tools)
+make deps.install;
+
+# Run code verification (static analysis, linting etc)
+make verify;
+
+# Verify code using static analysis tools and automatically apply fixes when possible
+make verify.fix;
+
+# Run all code generation
+make codegen;
+
+# Verify empty git diff after codegen
+make verify.empty-git-diff;
+
+# Run unit tests
+make test.unit;
+
+# Start local devstack dependencies (Postgres and PgAdmin)
+make devstack.start;
+
+# Run tests (some tests rely on having the DB running)
+make test.integration.whitebox;
+
+# Execute the database migrations to the latest version
+make db.migrate.up.all;
+
+# Run the dev server (deploys some remote infra to AWS but executes the functions on your local machine).
+make dev.start;
+
+# Run tests (some tests rely on having the DB running)
+make test.integration.blackbox;
+```
+
+At this point you should have a development version of this API project running 🎉. This does deploy some remote infrastructure to AWS, you can [read more about it here](https://docs.serverless-stack.com/live-lambda-development)
+
+You can stop or recreate the devstack using the following commands
+
+```sh
+# Stop shutdown the docker containers running as part of the devstack
+make devstack.stop
+
+# Delete/reset the devstack, removes all the containers, volumes etc of the docker-compose stack
+make devstack.clean
+```

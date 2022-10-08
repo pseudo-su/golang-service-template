@@ -23,7 +23,10 @@ type Server struct {
 
 func NewServer() *Server {
 	return &Server{
-		Server:      http.Server{},
+		Server: http.Server{
+			ReadTimeout:       10 * time.Second,
+			ReadHeaderTimeout: 10 * time.Second,
+		},
 		router:      mux.NewRouter(),
 		basePath:    "/",
 		ShutdownReq: make(chan bool),

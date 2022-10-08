@@ -1,0 +1,17 @@
+paths:
+  /pets:
+    post:
+      operationId: createPet
+      summary: Create a pet
+      description: Create a pet
+      tags:
+        - pets
+      responses:
+        '201':
+          description: Null response
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"

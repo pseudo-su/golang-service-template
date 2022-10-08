@@ -2,46 +2,95 @@ name: Go
 on: [push]
 jobs:
 
-  build:
-    name: Build
+  build-and-verify:
+    name: build-and-verify
     runs-on: ubuntu-latest
     steps:
 
-    - name: Set up Go 1.14
+    - name: Set up Go 1.18
       id: go
-      uses: actions/setup-go@v2-beta
+      uses: actions/setup-go@v3
       with:
-        go-version: 1.14
+        go-version: '1.18'
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v1
 
-    - name: Get dependencies
+    - name: Install project dependencies
       run: |
-        make setup
+        make deps.install
 
     - name: Ensure consistent/idempotent code generation
+      env:
+        SKIP_PLANTUML_DIAGRAM_OUTPUT: true
       run: |
-        go generate ./...
-        COUNT=$(git status --porcelain | wc -l)
-        echo "$COUNT lines changed after running \"go generate ./...\""
-        exit $COUNT
+        make codegen;
+        make verify.empty-git-diff;
 
-    - name: Lint Go code
+    - name: Run code verification / static analysis
       run: |
-        ./bin/golangci-lint run ./...
-
-    - name: Lint OpenAPI spec
-      run: |
-        ./bin/spectral lint --fail-severity=warn ./openapi.yaml
+        make verify;
 
     - name: Unit Test
       run: |
-        make report-test-unit
-
-    - name: Integration Test
-      run: |
-        docker-compose run --rm tools make report-test-integration
+        make test.unit.report
 
     - name: Build
-      run: go build -v -o golang-service-template ./cmd
+      run: go build -v -o service ./cmd/service
+
+    - name: Start devstack
+      run: |
+        make devstack.start
+
+    - name: Run whitebox integration tests
+      run: |
+        make test.integration.whitebox.report
+
+    - name: Start dev server
+      run: |
+        make dev.start
+
+    - name: Run blackbox integration tests
+      run: |
+        make test.integration.blackbox.report
+
+    - name: Stop dev server
+      if: always()
+      continue-on-error: true
+      run: |
+        make dev.logs.report
+        make dev.stop
+
+    - name: Stop devstack
+      if: always()
+      continue-on-error: true
+      run: |
+        make devstack.logs.report
+        make devstack.stop
+
+    - name: Capture reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      continue-on-error: true
+      with:
+        name: reports
+        path: ./reports
+
+    - name: Print github-actions annotations
+      if: always()
+      continue-on-error: true
+      run: |
+        cat reports/*.github-actions
+
+    - uses: ashley-taylor/junit-report-annotations-action@1.3
+      if: always()
+      continue-on-error: true
+      with:
+        path: reports/**.junit.xml
+        access-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - uses: pcolby/tap-summary@v1
+      if: always()
+      continue-on-error: true
+      with:
+        path: reports/**/*.tap
