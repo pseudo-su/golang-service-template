@@ -74,20 +74,18 @@ make test.unit;
 # Start local devstack dependencies (Postgres and PgAdmin)
 make devstack.start;
 
-# Run tests (some tests rely on having the DB running)
+# Run whitebox integration tests (needs devstack to be running)
 make test.integration.whitebox;
 
 # Execute the database migrations to the latest version
 make db.migrate.up.all;
 
-# Run the dev server (deploys some remote infra to AWS but executes the functions on your local machine).
+# Run the dev server.
 make dev.start;
 
-# Run tests (some tests rely on having the DB running)
+# Run blackbox integration tests (needs devstack and app to be running)
 make test.integration.blackbox;
 ```
-
-At this point you should have a development version of this API project running 🎉. This does deploy some remote infrastructure to AWS, you can [read more about it here](https://docs.serverless-stack.com/live-lambda-development)
 
 You can stop or recreate the devstack using the following commands
 
