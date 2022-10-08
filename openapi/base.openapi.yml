@@ -1,0 +1,29 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Swagger Petstore
+  license:
+    name: MIT
+  contact:
+    name: golang-service-template
+    email: contact@golang-service-template.com
+    url: github.com/pseudo-su/golang-service-template
+  description: |
+    This is an example OpenAPI spec to use as a reference when starting a project using github.com/pseudo-su/golang-service-template
+
+tags:
+  - name: "pets"
+    description: "All things to do with pets"
+
+servers:
+  - url: /golang-service-template/v1
+    description: Current Domain
+  - url: https://{domain}/golang-service-template/v1
+    description: Other Domain
+    variables:
+      domain:
+        description: Enter custom domain to target
+        default: api.example.com
+  - url: http://petstore.swagger.io/v1
+
+paths: {}

@@ -1,0 +1,24 @@
+{
+  "go.formatTool": "goimports",
+  "go.lintTool": "golangci-lint",
+  "go.alternateTools": {
+    "golangci-lint": "${workspaceFolder}/tools/golangci-lint"
+  },
+  "go.testEnvFile": "${workspaceFolder}/.env.test",
+  "[go]": {
+    "editor.formatOnSaveMode": "file"
+  },
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "askForPassword": false,
+      "password": "1234",
+      "driver": "PostgreSQL",
+      "name": "devstack",
+      "database": "golang_service_template_localdev",
+      "username": "root"
+    }
+  ]
+}

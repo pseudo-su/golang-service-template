@@ -1,0 +1,36 @@
+version: "3"
+services:
+
+  devstack:
+    image: tianon/true
+    restart: "no"
+    depends_on:
+      - postgres
+      - pgadmin
+
+  postgres:
+    container_name: golang-service-template.postgres
+    image: postgres:latest
+    command: ["postgres", "-c", "log_statement=all"]
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./.env
+    volumes:
+      - ./postgres/init:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data # persist data even if container shuts down
+
+  pgadmin:
+    container_name: golang-service-template.pgadmin
+    image: dpage/pgadmin4:6.7
+    env_file:
+      - ./.env
+    depends_on:
+      - "postgres"
+    ports:
+      - 5050:5050
+    volumes:
+      - "./pgadmin/config/servers.json:/pgadmin4/servers.json"
+
+volumes:
+  postgres_data:

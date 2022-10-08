@@ -1,0 +1,20 @@
+{
+  // https://go.microsoft.com/fwlink/?LinkId=827846
+  "recommendations": [
+    "golang.go",
+    "mikestead.dotenv",
+    "mechatroner.rainbow-csv",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg",
+    "editorconfig.editorconfig",
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+    "ms-vsliveshare.vsliveshare-pack",
+    "davidanson.vscode-markdownlint",
+    "42crunch.vscode-openapi",
+    "yzhang.markdown-all-in-one",
+    "pkief.material-icon-theme",
+    "jebbs.plantuml",
+    "stoplight.spectral"
+  ]
+}

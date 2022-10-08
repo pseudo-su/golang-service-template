@@ -1,7 +1,33 @@
-/bin
-/.gobincache
-/golang-service-template
-/.idea
-.DS_store
-reports/
+# Golang files
+/service
 __debug_bin
+
+# OS Files
+
+**/.DS_Store
+
+# Dotenv files
+/.env*.local
+/test_suites/.env*.local
+
+# Reports
+/reports/**
+!/reports/.gitkeep
+
+# Direnv
+/.envrc
+
+# Tool dependencies
+/tools/*
+!/tools/device-info.sh
+!/tools/tools.cfg
+!/tools/tools.mk
+
+### IDE
+
+# Vscode
+/.vscode/settings.json
+
+# IDEA/IntelliJ/Webstorm/Goland etc
+.idea/
+

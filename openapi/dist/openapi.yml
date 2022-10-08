@@ -1,0 +1,131 @@
+components:
+  schemas:
+    Error:
+      properties:
+        code:
+          format: int32
+          type: integer
+        message:
+          type: string
+      required:
+      - code
+      - message
+      type: object
+    Pet:
+      properties:
+        id:
+          format: int64
+          type: integer
+        name:
+          type: string
+        tag:
+          type: string
+      required:
+      - id
+      - name
+      type: object
+    Pets:
+      items:
+        $ref: '#/components/schemas/Pet'
+      type: array
+info:
+  contact:
+    email: contact@golang-service-template.com
+    name: golang-service-template
+    url: github.com/pseudo-su/golang-service-template
+  description: |
+    This is an example OpenAPI spec to use as a reference when starting a project using github.com/pseudo-su/golang-service-template
+  license:
+    name: MIT
+  title: Swagger Petstore
+  version: 1.0.0
+openapi: 3.0.0
+paths:
+  /pets:
+    get:
+      description: List all the pets
+      operationId: listPets
+      parameters:
+      - description: How many items to return at one time (max 100)
+        in: query
+        name: limit
+        required: false
+        schema:
+          format: int32
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pets'
+          description: A paged array of pets
+          headers:
+            x-next:
+              description: A link to the next page of responses
+              schema:
+                type: string
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+      summary: List all pets
+      tags:
+      - pets
+    post:
+      description: Create a pet
+      operationId: createPet
+      responses:
+        "201":
+          description: Null response
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+      summary: Create a pet
+      tags:
+      - pets
+  /pets/{petId}:
+    get:
+      description: Info for a specific pet
+      operationId: getPetById
+      parameters:
+      - description: The id of the pet to retrieve
+        in: path
+        name: petId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+          description: Expected response to a valid request
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+      summary: Info for a specific pet
+      tags:
+      - pets
+servers:
+- description: Current Domain
+  url: /golang-service-template/v1
+- description: Other Domain
+  url: https://{domain}/golang-service-template/v1
+  variables:
+    domain:
+      default: api.example.com
+      description: Enter custom domain to target
+- url: http://petstore.swagger.io/v1
+tags:
+- description: All things to do with pets
+  name: pets
