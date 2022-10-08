@@ -5,8 +5,6 @@ import (
 	"testing"
 
 	"github.com/caarlos0/env"
-	"github.com/pseudo-su/golang-service-template/internal"
-	"github.com/pseudo-su/golang-service-template/internal/config"
 	"github.com/pseudo-su/golang-service-template/pkg"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
@@ -14,7 +12,6 @@ import (
 
 type TestSuite struct {
 	suite.Suite
-	server    *config.Server
 	suiteCtx  *TestSuiteContext
 	apiClient *pkg.ClientWithResponses
 }
@@ -30,21 +27,9 @@ func (s *TestSuite) SetupSuite() {
 	}
 
 	s.apiClient = apiClient
-	s.server = internal.Bootstrap(s.suiteCtx)
-
-	if s.suiteCtx.envValues.UseEmbeddedServer {
-		go func() {
-			err := s.server.ListenAndServe()
-			if err != nil {
-				log.Infof("Listen and serve: %v", err)
-			}
-		}()
-	}
 }
 
-func (s *TestSuite) TeardownSuite() {
-	s.server.ShutdownReq <- true
-}
+func (s *TestSuite) TeardownSuite() {}
 
 func TestRunSuite(t *testing.T) {
 	suite.Run(t, new(TestSuite))
@@ -79,13 +64,12 @@ func (suiteCtx *TestSuiteContext) ServiceBasepath() string {
 }
 
 type testSuiteEnv struct {
-	UseEmbeddedServer bool   `env:"USE_EMBEDDED_SERVER" envDefault:"true"`
-	APIScheme         string `env:"API_SCHEME" envDefault:"http"`
-	APIHost           string `env:"API_HOST" envDefault:"localhost"`
-	APIPort           int    `env:"API_PORT" envDefault:"3000"`
-	APIBasepath       string `env:"API_BASEPATH" envDefault:"/golang-service-template/v1"`
-	Env               string `env:"ENV" envDefault:"local"`
-	LogLevel          string `env:"LOG_LEVEL" envDefault:"debug"`
+	APIScheme   string `env:"API_SCHEME" envDefault:"http"`
+	APIHost     string `env:"API_HOST" envDefault:"localhost"`
+	APIPort     int    `env:"API_PORT" envDefault:"3000"`
+	APIBasepath string `env:"API_BASEPATH" envDefault:"/golang-service-template/v1"`
+	Env         string `env:"ENV" envDefault:"local"`
+	LogLevel    string `env:"LOG_LEVEL" envDefault:"debug"`
 }
 
 func ParseSuiteConfig() *TestSuiteContext {

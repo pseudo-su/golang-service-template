@@ -6,9 +6,18 @@ paths:
       description: Create a pet
       tags:
         - pets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PetEditableValues"
       responses:
         '201':
           description: Null response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
         default:
           description: unexpected error
           content:

@@ -8,27 +8,27 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func (suite *TestSuite) TestListPets() {
+func (suite *TestSuite) TestCreateAndListPets() {
 	t := suite.T()
 	ctx := context.Background()
-	params := pkg.ListPetsParams{}
-	_, err := suite.apiClient.ListPetsWithResponse(ctx, &params)
-	fmt.Println(err)
-	assert.Equal(t, nil, err)
-}
+	var err error
+	// Create pets
+	pet1, err := suite.apiClient.CreatePetWithResponse(ctx, pkg.CreatePetJSONRequestBody{
+		Name: "Robert",
+		Tag:  nil,
+	})
+	assert.NoError(t, err)
+	_, err = suite.apiClient.CreatePetWithResponse(ctx, pkg.CreatePetJSONRequestBody{
+		Name: "Peter",
+		Tag:  nil,
+	})
+	assert.NoError(t, err)
 
-func (suite *TestSuite) TestCreatePet() {
-	t := suite.T()
-	ctx := context.Background()
-	_, err := suite.apiClient.CreatePetWithResponse(ctx)
-	fmt.Println(err)
-	assert.Equal(t, nil, err)
-}
+	// List pets
+	_, err = suite.apiClient.ListPetsWithResponse(ctx, &pkg.ListPetsParams{})
+	assert.NoError(t, err)
 
-func (suite *TestSuite) TestShowPetById() {
-	t := suite.T()
-	ctx := context.Background()
-	_, err := suite.apiClient.GetPetByIdWithResponse(ctx, "2")
-	fmt.Println(err)
-	assert.Equal(t, nil, err)
+	// Get a pet by ID
+	_, err = suite.apiClient.GetPetByIdWithResponse(ctx, fmt.Sprint(pet1.JSON201.Id))
+	assert.NoError(t, err)
 }

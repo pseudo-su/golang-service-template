@@ -8,64 +8,51 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/pseudo-su/golang-service-template/internal/config"
+	"github.com/pseudo-su/golang-service-template/internal/persistence"
 	"github.com/pseudo-su/golang-service-template/pkg"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
-type PetsRouteContext interface{}
-
-var pets pkg.Pets
-
-func init() {
-	pets = pkg.Pets{
-		pkg.Pet{
-			Id:   1,
-			Name: "Rex",
-			Tag:  nil,
-		},
-		pkg.Pet{
-			Id:   2,
-			Name: "Spot",
-			Tag:  nil,
-		},
-		pkg.Pet{
-			Id:   3,
-			Name: "Barry",
-			Tag:  nil,
-		},
+func newPetFromDB(dbPet *persistence.Pet) *pkg.Pet {
+	return &pkg.Pet{
+		Id:   dbPet.APIID,
+		Name: dbPet.Name,
+		Tag:  dbPet.Tag,
 	}
 }
 
-func ListPetsRoute(routeCtx PetsRouteContext) *config.Route {
+func newPetListFromDB(dbList []persistence.Pet) []pkg.Pet {
+	result := []pkg.Pet{}
+
+	for _, val := range dbList {
+		result = append(result, *newPetFromDB(&val))
+	}
+
+	return result
+}
+
+type PetsRouteContext interface{}
+
+func ListPetsRoute(routeCtx PetsRouteContext, petsRepo persistence.PetsRepositoryInterface) *config.Route {
 	return &config.Route{
 		Path:   "/pets",
 		Method: http.MethodGet,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			resp, _ := json.Marshal(&pets)
-
-			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write(resp)
-		}),
-	}
-}
-
-func CreatePetRoute(routeCtx PetsRouteContext) *config.Route {
-	return &config.Route{
-		Path:   "/pets",
-		Method: http.MethodPost,
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			pet := pkg.Pet{
-				Id:   int64(len(pets) + 1),
-				Name: "Rex",
-				Tag:  nil,
-			}
-			pets = append(pets, pet)
-			resp, err := json.Marshal(&pet)
+			pets, err := petsRepo.ListPets(r.Context(), &persistence.PaginationValues{
+				Limit:  10,
+				Offset: 0,
+			})
 			if err != nil {
-				// TODO: handle error
-				log.Warn("marshaling error")
+				logrus.Error(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			resp, err := json.Marshal(newPetListFromDB(pets))
+			if err != nil {
+				logrus.Error(err)
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
@@ -75,7 +62,36 @@ func CreatePetRoute(routeCtx PetsRouteContext) *config.Route {
 	}
 }
 
-func GetPetRoute(routeCtx PetsRouteContext) *config.Route {
+func CreatePetRoute(routeCtx PetsRouteContext, petsRepo persistence.PetsRepositoryInterface) *config.Route {
+	return &config.Route{
+		Path:   "/pets",
+		Method: http.MethodPost,
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			pet, err := petsRepo.CreatePet(r.Context(), &persistence.PetValues{
+				Name: "Rex",
+				Tag:  nil,
+			})
+			if err != nil {
+				logrus.Error(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			resp, err := json.Marshal(newPetFromDB(pet))
+			if err != nil {
+				logrus.Error(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			w.WriteHeader(http.StatusCreated)
+			_, _ = w.Write(resp)
+		}),
+	}
+}
+
+func GetPetRoute(routeCtx PetsRouteContext, petsRepo persistence.PetsRepositoryInterface) *config.Route {
 	return &config.Route{
 		Path:   "/pets/{petId}",
 		Method: http.MethodGet,
@@ -83,21 +99,22 @@ func GetPetRoute(routeCtx PetsRouteContext) *config.Route {
 			vars := mux.Vars(r)
 			petID, err := strconv.ParseInt(vars["petId"], 10, 64)
 			if err != nil {
-				// TODO: add validation
-				log.Warn("validation error")
+				logrus.Error(err)
+				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
-			var pet pkg.Pet
-			for _, p := range pets {
-				if p.Id == petID {
-					pet = p
-				}
-			}
-			resp, err := json.Marshal(&pet)
+			pet, err := petsRepo.GetPetByAPIID(r.Context(), petID)
 			if err != nil {
-				// TODO: handle error
-				log.Warn("marshaling error")
+				logrus.Error(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			resp, err := json.Marshal(newPetFromDB(pet))
+			if err != nil {
+				logrus.Error(err)
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 

@@ -17,8 +17,23 @@ components:
           format: int64
           type: integer
         name:
+          example: Rex
           type: string
         tag:
+          example: dog
+          nullable: true
+          type: string
+      required:
+      - id
+      - name
+      type: object
+    PetEditableValues:
+      properties:
+        name:
+          example: Rex
+          type: string
+        tag:
+          example: dog
           type: string
       required:
       - id
@@ -51,6 +66,15 @@ paths:
         name: limit
         required: false
         schema:
+          example: 20
+          format: int32
+          type: integer
+      - description: What page
+        in: query
+        name: page
+        required: false
+        schema:
+          example: 1
           format: int32
           type: integer
       responses:
@@ -77,8 +101,17 @@ paths:
     post:
       description: Create a pet
       operationId: createPet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PetEditableValues'
       responses:
         "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
           description: Null response
         default:
           content:

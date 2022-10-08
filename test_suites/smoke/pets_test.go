@@ -20,7 +20,10 @@ func (suite *TestSuite) TestListPets() {
 func (suite *TestSuite) TestCreatePet() {
 	t := suite.T()
 	ctx := context.Background()
-	_, err := suite.apiClient.CreatePetWithResponse(ctx)
+	_, err := suite.apiClient.CreatePetWithResponse(ctx, pkg.CreatePetJSONRequestBody{
+		Name: "Peter",
+		Tag:  nil,
+	})
 	fmt.Println(err)
 	assert.Equal(t, nil, err)
 }

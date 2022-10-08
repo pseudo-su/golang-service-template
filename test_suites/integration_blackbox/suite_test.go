@@ -5,8 +5,6 @@ import (
 	"testing"
 
 	"github.com/caarlos0/env"
-	"github.com/pseudo-su/golang-service-template/internal"
-	"github.com/pseudo-su/golang-service-template/internal/config"
 	"github.com/pseudo-su/golang-service-template/pkg"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
@@ -14,7 +12,6 @@ import (
 
 type TestSuite struct {
 	suite.Suite
-	server    *config.Server
 	suiteCtx  *TestSuiteContext
 	apiClient *pkg.ClientWithResponses
 }
@@ -30,12 +27,9 @@ func (s *TestSuite) SetupSuite() {
 	}
 
 	s.apiClient = apiClient
-	s.server = internal.Bootstrap(s.suiteCtx)
 }
 
-func (s *TestSuite) TeardownSuite() {
-	s.server.ShutdownReq <- true
-}
+func (s *TestSuite) TeardownSuite() {}
 
 func TestRunSuite(t *testing.T) {
 	suite.Run(t, new(TestSuite))
