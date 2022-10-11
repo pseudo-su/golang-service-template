@@ -28,7 +28,7 @@ deps.app.update:
 .PHONY: deps.app.update
 
 ## Install tool dependencies
-deps.tools.install: tools/golangci-lint tools/plantuml.jar tools/spectral tools/migrate tools/conflate tools/godotenv tools/oapi-codegen tools/oapi-ui-codegen tools/jet tools/patter
+deps.tools.install: tools/golangci-lint tools/plantuml.jar tools/spectral tools/migrate tools/conflate tools/godotenv tools/oapi-codegen tools/oapi-ui-codegen tools/jet tools/patter tools/mockgen
 .PHONY: deps.tools.install
 
 ## Update tool dependencies
