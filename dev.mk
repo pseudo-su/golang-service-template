@@ -75,7 +75,7 @@ test.unit.go.report: precheck-report
 ## Run OpenAPI unit tests
 test.unit.openapi:
 	echo "TODO: OpenAPI unit tests"
-	# ${TEST_DOTENV} ${TEST_GO} ./test_suites/openapi/...
+	${TEST_DOTENV} ${TEST_GO} ./test_suites/openapi/...
 .PHONY: test.unit.openapi
 
 ## Run all integration tests

@@ -1,3 +1,5 @@
+-- https://stackoverflow.com/questions/506432/cascading-soft-delete/53046345#53046345
+
 CREATE OR REPLACE FUNCTION manage_auto_soft_delete(_tbl regclass) RETURNS VOID AS $$
 BEGIN
     EXECUTE format('CREATE TABLE _deleted_%s (
