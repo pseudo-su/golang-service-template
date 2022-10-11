@@ -35,7 +35,7 @@ cp docs/examples/.env.local .
 cp .vscode/settings.recommended.json .vscode/settings.json
 ```
 
-If you are using `direnv` (recommended), copy the example `.envrc` file and update it with your desired STAGE name (eg. "stableford"). If you have direnv installed it will automatically load project specific config into your shell when entering the project folder.
+If you are using `direnv` (recommended), copy the example `.envrc` file. If you have direnv installed it will automatically load project specific config into your shell when entering the project folder.
 
 ```sh
 cp docs/examples/.envrc .
